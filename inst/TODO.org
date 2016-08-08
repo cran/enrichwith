@@ -1,0 +1,6 @@
++ [ ] Partial matching for option names
++ [ ] How to update a template with new options?
++ [X] Implement bias and observed information for glm objects
++ [X] Add citation
++ [X] Add "enriched_" to the primary class of the object
+
