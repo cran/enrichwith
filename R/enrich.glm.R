@@ -31,11 +31,11 @@
 #' ## Reproduce left plot in Figure 4.1 in Kosimdis (2007)
 #' ## (see http://www.ucl.ac.uk/~ucakiko/files/ikosmidis_thesis.pdf)
 #' mod <- glm(1 ~ 1, weights = 10, family = binomial())
-#' enriched_mod <- enrich(aa, with = "auxiliary functions")
+#' enriched_mod <- enrich(mod, with = "auxiliary functions")
 #' biasfun <- enriched_mod$auxiliary_functions$bias
 #' probabilities <- seq(1e-02, 1 - 1e-02, length = 100)
 #' biases <- Vectorize(biasfun)(qlogis(probabilities))[1,]
-#' plot(probabilities, biases, type = "l", ylim = c(-0.5, 0.5)
+#' plot(probabilities, biases, type = "l", ylim = c(-0.5, 0.5),
 #'      xlab = expression(pi), ylab = "first-order bias")
 #' abline(h = 0, lty = 2)
 #' title("First-order bias of the MLE of the log-odds", sub = "m = 10")
@@ -92,7 +92,7 @@
     out <- list()
     out$option <- c('auxiliary functions', 'score vector', 'mle of dispersion', 'expected information', 'observed information', 'first-order bias')
     ## Provide the descriptions of the enrichment options
-    out$description <- c('various likelihood-based quantities as functions of the model parameters', 'gradient of the log-likelihood at the mle', 'mle of the dispersion parameter', 'expected information matrix evaluated at the mle', 'observed information matrix evaluated at the mle', 'first term in the expansion of the bias of the mle at the mle')
+    out$description <- c('various likelihood-based quantities (gradient of the log-likelihood, expected and observed information matrix and first term in the expansion of the bias of the mle) as functions of the model parameters', 'gradient of the log-likelihood at the mle', 'mle of the dispersion parameter', 'expected information matrix evaluated at the mle', 'observed information matrix evaluated at the mle', 'first term in the expansion of the bias of the mle at the mle')
     ## Add all as an option
     out$option <- c(out$option, 'all')
     out$description <- c(out$description, 'all available options')
@@ -164,10 +164,11 @@
         d1mus <- d1mu(predictors)
         variances <- variance(fitted_values)
         ## Score for coefss
-        score_coefs <- colSums(prior_weights * d1mus * (y - fitted_values) * x / variances)/dispersion
+        score_beta <- colSums(prior_weights * d1mus * (y - fitted_values) * x / variances)/dispersion
         ## Score for dispersion
         if (family$family %in% c("poisson", "binomial")) {
-            score_dispersion <- 0
+            score_dispersion <- NULL
+            vnames <- names(score_beta)
         }
         else {
             zetas <- -prior_weights/dispersion
@@ -176,10 +177,11 @@
             devianceResiduals <- family$dev.resids(y, fitted_values, prior_weights)
             EdevianceResiduals <- prior_weights * d1afuns
             score_dispersion <- sum(devianceResiduals - EdevianceResiduals, na.rm = TRUE) / (2 * dispersion^2)
+            vnames <- c(names(score_beta), "dispersion")
         }
         ## Overall score
-        out <- c(score_coefs, score_dispersion)
-        names(out) <- paste0("grad_", c(names(score_coefs), "dispersion"))
+        out <- c(score_beta, score_dispersion)
+        names(out) <- paste0("grad_", vnames)
         out
     }
 
@@ -196,25 +198,25 @@
             return(qr(wx))
         }
         ## expected info coefs-coefs
-        info_coefs <- crossprod(wx) / dispersion
+        info_beta <- crossprod(wx) / dispersion
         if (type == "observed") {
             d2mus <- d2mu(predictors)
             d1variances <- d1variance(fitted_values)
             w <- prior_weights * (d2mus / variances - d1mus^2 * d1variances / variances^2) * (y - fitted_values)
             ## observed info coefs-coefs
-            info_coefs <- info_coefs - t(x * w) %*% x / dispersion
+            info_beta <- info_beta - t(x * w) %*% x / dispersion
         }
-        rownames(info_coefs) <- colnames(info_coefs) <- colnames(x)
+        rownames(info_beta) <- colnames(info_beta) <- colnames(x)
         ## If there is no dispersion parameter then return the
         ## information for the coefficients only
         if (family$family %in% c("poisson", "binomial")) {
-            return(info_coefs)
+            return(info_beta)
         }
         ## If there is a dispersion parameter then return the
         ## information on the coefficients and tha dispersion
         else {
             ## expected info coefs-dispersion
-            info_cross <- rep(0, ncol(info_coefs))
+            info_cross <- rep(0, ncol(info_beta))
             ## expected info dispersion-dispersion
             zetas <- -prior_weights/dispersion
             d2afuns <- rep(NA, nobs)
@@ -231,7 +233,7 @@
                 EdevianceResiduals <- prior_weights * d1afuns
                 info_dispe <- info_dispe + sum(devianceResiduals - EdevianceResiduals, na.rm = TRUE) / dispersion^3
             }
-            out <- rbind(cbind(info_coefs, info_cross),
+            out <- rbind(cbind(info_beta, info_cross),
                          c(info_cross, info_dispe))
             colnames(out) <- rownames(out) <- c(colnames(x), "dispersion")
             out
@@ -251,7 +253,8 @@
         ksi <- -0.5 * dispersion * d2mus * hats / (d1mus * sqrt(working_weights))
         bias_beta <- drop(tcrossprod(ksi %*% Q, solve(qr.R(Qr))))
         if (family$family %in% c("poisson", "binomial")) {
-            bias_dispersion <- 0
+            bias_dispersion <- NULL
+            vnames <- names(bias_beta)
         }
         else {
             if (dfResidual > 0) {
@@ -269,10 +272,11 @@
             else {
                 bias_dispersion <- NA
             }
+            vnames <- c(names(bias_beta), "dispersion")
         }
-        names(bias_dispersion) <- "bias_dispersion"
-        names(bias_beta) <- paste0("bias_", names(bias_beta))
-        c(bias_beta, bias_dispersion)
+        out <- c(bias_beta, bias_dispersion)
+        names(out) <- paste0("bias_", vnames)
+        out
     }
 
     return(list(score = score,
@@ -288,8 +292,14 @@
 
 
 `compute_score_mle.glm` <- function(object, ...) {
-    object <- enrich(object, with = "auxialiary functions")
-
+    if (object$family$family %in% c("poisson", "binomial")) {
+        dispersion_mle <- 1
+    }
+    else {
+        dispersion_mle <- enrich(object, with = "mle of dispersion")$dispersion_mle
+    }
+    object <- enrich(object, with = "auxiliary functions")
+    object$auxiliary_functions$score(coef(object, model = "mean"), dispersion_mle)
 }
 
 
@@ -309,24 +319,26 @@
         keep <- prior_weights > 0
         dfResidual <- sum(keep) - object$rank
 
-        gradfun <- function(dispersion) {
-            object$auxiliary_functions$score(coef(object), dispersion)[length(coef(object)) + 1]
+        gradfun <- function(logdispersion) {
+            beta <- coef(object, model = "mean")
+            object$auxiliary_functions$score(beta, exp(logdispersion))[length(beta) + 1]
         }
 
         if (dfResidual > 0) {
-            dispFit <- try(uniroot(f = gradfun, lower = .Machine$double.eps, upper = 10000, tol = 1e-06), silent = FALSE)
+            dispFit <- try(uniroot(f = gradfun, lower = 0.5*log(.Machine$double.eps), upper = 20, tol = 1e-08, maxiter = 10000), silent = FALSE)
             if (inherits(dispFit, "try-error")) {
                 warning("the mle of dispersion could not be calculated")
                 dispersion_mle <- NA
             }
             else {
-                dispersion_mle <- dispFit$root
+                dispersion_mle <- exp(dispFit$root)
             }
         }
         else {
             ## if the model is saturated dispersion_mle is NA
             dispersion_mle <- NA
     }
+        names(dispersion_mle) <- "dispersion"
         dispersion_mle
     }
 }
@@ -339,7 +351,7 @@
 `compute_expected_information_mle.glm` <- function(object, dispersion = dispersion_mle) {
     object <- enrich(object, with = "auxiliary functions")
     dispersion_mle <- enrich(object, with = "mle of dispersion")$dispersion_mle
-    object$auxiliary_functions$information(coef(object), dispersion, type = "expected")
+    object$auxiliary_functions$information(coef(object, model = "mean"), dispersion, type = "expected")
 }
 
 
@@ -351,7 +363,7 @@
 `compute_observed_information_mle.glm` <- function(object, dispersion = dispersion_mle) {
     object <- enrich(object, with = "auxiliary functions")
     dispersion_mle <- enrich(object, with = "mle of dispersion")$dispersion_mle
-    object$auxiliary_functions$information(coef(object), dispersion, type = "observed")
+    object$auxiliary_functions$information(coef(object, model = "mean"), dispersion, type = "observed")
 }
 
 
@@ -371,22 +383,39 @@
 `compute_bias_mle` <- function(object, ...) {
     object <- enrich(object, with = "auxiliary functions")
     dispersion_mle <- enrich(object, with = "mle of dispersion")$dispersion_mle
-    object$auxiliary_functions$bias(coef(object), dispersion_mle)
+    object$auxiliary_functions$bias(coef(object, model = "mean"), dispersion_mle)
 }
 
 
 
-
+#' Function to extract model coefficients from objects of class \code{enriched_glm}
+#'
+#' @param object an object of class \code{enriched_glm}
+#' @param model either "mean" for the estimates of the parameters in the linear predictor, or "dispersion" for the estimate of the dispersion, or "full" for all estimates
+#' @param ... currently unused
+#' @export
+coef.enriched_glm <- function(object, model = c("mean", "full", "dispersion"), ...) {
+    beta <- object$coefficients
+    switch(match.arg(model),
+           mean = {
+               beta
+           },
+           dispersion = {
+               object$dispersion
+           },
+           full = {
+               c(beta, object$dispersion)
+           })
+}
 
 
 ## ## Call that produced the enrichwith template for the current script:
 ## create_enrichwith_skeleton(class = "glm", option = c("auxiliary functions",
 ##     "score vector", "mle of dispersion", "expected information",
-##     "observed information", "first-order bias"), description = c("various likelihood-based quantities as functions of the model parameters",
+##     "observed information", "first-order bias"), description = c("various likelihood-based quantities (gradient of the log-likelihood, expected and observed information matrix and first term in the expansion of the bias of the mle) as functions of the model parameters",
 ##     "gradient of the log-likelihood at the mle", "mle of the dispersion parameter",
 ##     "expected information matrix evaluated at the mle", "observed information matrix evaluated at the mle",
 ##     "first term in the expansion of the bias of the mle at the mle"),
 ##     component = list("auxiliary_functions", "score_mle", "dispersion_mle",
 ##         "expected_information_mle", "observed_information_mle",
 ##         "bias_mle"), path = "~/Downloads", attempt_rename = FALSE)
-

@@ -3,4 +3,5 @@
 + [X] Implement bias and observed information for glm objects
 + [X] Add citation
 + [X] Add "enriched_" to the primary class of the object
++ [ ] Write a small vignette
 

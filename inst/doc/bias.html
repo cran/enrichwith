@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Ioannis Kosmidis" />
+
+<meta name="date" content="2016-09-02" />
+
+<title>Bias reduction in generalized linear models using enrichwith</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Bias reduction in generalized linear models using <strong>enrichwith</strong></h1>
+<h4 class="author"><em><a href="http://www.ucl.ac.uk/~ucakiko/">Ioannis Kosmidis</a></em></h4>
+<h4 class="date"><em>2016-09-02</em></h4>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>The <strong>enrichwith</strong> package provides the <code>enrich</code> method to enrich list-like R objects with new, relevant components. The resulting objects preserve their class, so all methods associated with them still apply.</p>
+<p>This vignette demonstrates some of the available enrichment options for <code>glm</code> objects in <a href="https://github.com/ikosmidis/enrichwith"><strong>enrichwith</strong></a>. In particular, the enriched <code>glm</code> objects are used here to implement a <em>quasi <a href="https://en.wikipedia.org/wiki/Scoring_algorithm">Fisher scoring</a></em> procedure for computing reduced-bias estimates in <a href="https://en.wikipedia.org/wiki/Generalized_linear_model">generalized linear models</a> (GLMs). <span class="citation">Kosmidis and Firth (2010)</span> describe a parallel quasi <a href="https://en.wikipedia.org/wiki/Newton%27s_method">Newton-Raphson</a> procedure.</p>
+<hr />
+</div>
+<div id="endometrial-cancer-data" class="section level1">
+<h1>Endometrial cancer data</h1>
+<p><span class="citation">Heinze and Schemper (2002)</span> used a logistic regression model to analyse data from a study on endometrial cancer. <span class="citation">Agresti (2015 Section 5.7)</span> provide details on the data set. Below, we fit a probit regression model with the same linear predictor as the logistic regression model in <span class="citation">Heinze and Schemper (2002)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Get the data from the online supplmementary material of Agresti (2015)</span>
+endometrial_url &lt;-<span class="st"> </span><span class="kw">url</span>(<span class="st">&quot;http://www.stat.ufl.edu/~aa/glm/data/Endometrial.dat&quot;</span>)
+endometrial &lt;-<span class="st"> </span><span class="kw">read.table</span>(endometrial_url, <span class="dt">header =</span> <span class="ot">TRUE</span>)
+modML &lt;-<span class="st"> </span><span class="kw">glm</span>(HG ~<span class="st"> </span>NV +<span class="st"> </span>PI +<span class="st"> </span>EH, <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="st">&quot;probit&quot;</span>), <span class="dt">data =</span> endometrial)
+theta_mle &lt;-<span class="st"> </span><span class="kw">coef</span>(modML)
+<span class="kw">summary</span>(modML)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = HG ~ NV + PI + EH, family = binomial(&quot;probit&quot;), 
+##     data = endometrial)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -1.47007  -0.67917  -0.32978   0.00008   2.74898  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)   2.18093    0.85732   2.544 0.010963 *  
+## NV            5.80468  402.23641   0.014 0.988486    
+## PI           -0.01886    0.02360  -0.799 0.424066    
+## EH           -1.52576    0.43308  -3.523 0.000427 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 104.90  on 78  degrees of freedom
+## Residual deviance:  56.47  on 75  degrees of freedom
+## AIC: 64.47
+## 
+## Number of Fisher Scoring iterations: 17</code></pre>
+<p>As is the case for the logistic regression in <span class="citation">Heinze and Schemper (2002)</span>, the maximum likelihood (ML) estimate of the parameter for <code>NV</code> is actually infinite. The reported, apparently finite value is merely due to false convergence of the iterative estimation procedure. The same is true for the estimated standard error, and, hence the value <code>r round(coef(summary(modML))[&quot;NV&quot;, &quot;z value&quot;], 3)</code> for the <span class="math inline">\(z\)</span>-statistic cannot be trusted for inference on the size of the effect for <code>NV</code>.</p>
+<p>In categorical-response models like the above, the bias reduction method in <span class="citation">Firth (1993)</span> has been found to result in finite estimates even when the ML ones are infinite <span class="citation">(see, Heinze and Schemper 2002, for logistic regressions; Kosmidis and Firth 2011, for multinomial regressions; Kosmidis 2014, for cumulative link models)</span>.</p>
+<p>One of the variants of that bias reduction method is implemented in the <a href="https://cran.r-project.org/web/packages/brglm/brglm.pdf"><strong>brglm</strong></a> R package, which estimates binomial-reponse GLMs using iterative ML fits on binomial pseudo-data <span class="citation">(see, Kosmidis 2007, Chapter 5, for details)</span>. The reduced-bias estimates for the probit regression on the endometrial data can be computed as follows.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;brglm&quot;</span>)</code></pre></div>
+<pre><code>## Loading required package: profileModel</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">modBR &lt;-<span class="st"> </span><span class="kw">brglm</span>(HG ~<span class="st"> </span>NV +<span class="st"> </span>PI +<span class="st"> </span>EH, <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="st">&quot;probit&quot;</span>), <span class="dt">data =</span> endometrial)
+theta_brglm &lt;-<span class="st"> </span><span class="kw">coef</span>(modBR)
+<span class="kw">summary</span>(modBR)</code></pre></div>
+<pre><code>## 
+## Call:
+## brglm(formula = HG ~ NV + PI + EH, family = binomial(&quot;probit&quot;), 
+##     data = endometrial)
+## 
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  1.91460    0.78877   2.427 0.015210 *  
+## NV           1.65892    0.74730   2.220 0.026427 *  
+## PI          -0.01520    0.02089  -0.728 0.466793    
+## EH          -1.37988    0.40329  -3.422 0.000623 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 93.983  on 78  degrees of freedom
+## Residual deviance: 57.587  on 75  degrees of freedom
+## AIC:  65.587</code></pre>
+<p>The <span class="math inline">\(z\)</span>-statistic for <code>NV</code> has value 2.22 when based on the reduced-bias estimates, providing some evidence for the existence of an effect.</p>
+<p>In the following, we use <strong>enrichwith</strong> to implement two variants of the bias reduction method via a unifying quasi Fisher scoring estimation procedure.</p>
+<hr />
+</div>
+<div id="quasi-fisher-scoring-for-bias-reduction" class="section level1">
+<h1>Quasi Fisher scoring for bias reduction</h1>
+<p>Consider a parametric <a href="https://en.wikipedia.org/wiki/Statistical_model">statistical model</a> <span class="math inline">\(\mathcal{P}_\theta\)</span> with unknown parameter <span class="math inline">\(\theta \in \Re^p\)</span> and the iteration <span class="math display">\[\theta^{(k + 1)} := \theta^{(k)} +
+\left\{i(\theta^{(k)})\right\}^{-1} s(\theta^{(k)}) - c(\theta^{(k)})
+b(\theta^{(k)})\]</span> where <span class="math inline">\(\theta^{(k)}\)</span> is the value of <span class="math inline">\(\theta\)</span> at the <span class="math inline">\(k\)</span>th iteration, <span class="math inline">\(s(\theta)\)</span> is the gradient of the log-<a href="https://en.wikipedia.org/wiki/Likelihood_function">likelihood</a> for <span class="math inline">\(\mathcal{P}_\theta\)</span>, <span class="math inline">\(i(\theta)\)</span> is the <a href="https://en.wikipedia.org/wiki/Fisher_information">expected information</a> matrix, and <span class="math inline">\(b(\theta)\)</span> is the <span class="math inline">\(O(n^{-1})\)</span> term in the expansion of the <a href="https://en.wikipedia.org/wiki/Bias_of_an_estimator">bias</a> of the <a href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">ML estimator</a> of <span class="math inline">\(\theta\)</span> <span class="citation">(see, for example, Cox and Snell 1968)</span>.</p>
+<p>The above iteration defines a <em>quasi</em> Fisher scoring estimation procedure in general, and reduces to exact Fisher scoring for ML estimation when <span class="math inline">\(c(\theta^{(k)}) = 0_p\)</span>, where <span class="math inline">\(0_p\)</span> is a vector of <span class="math inline">\(p\)</span> zeros.</p>
+<p>For either <span class="math inline">\(c(\theta) = I_p\)</span> or <span class="math inline">\(c(\theta) = \left\{i(\theta)\right\}^{-1} j(\theta)\)</span>, where <span class="math inline">\(I_p\)</span> is the <span class="math inline">\(p \times p\)</span> identity matrix and <span class="math inline">\(j(\theta)\)</span> is the <a href="https://en.wikipedia.org/wiki/Observed_information">observed information</a>, <span class="math inline">\(\theta^{(\infty)}\)</span> (if it exists) is a reduced-bias estimate, in the sense that it corresponds an estimator with bias of smaller asymptotic order than that of the ML estimator <span class="citation">(see, Firth 1993; Kosmidis and Firth 2010)</span>. The <strong>brglm</strong> estimates correspond to <span class="math inline">\(c(\theta) = I_p\)</span>.</p>
+<p>The asymptotic distribution of the reduced-bias estimators is the same to that of the ML estimator <span class="citation">(see, Firth 1993 for details)</span>. So, the reduced-bias estimates can be readily used to calculate <span class="math inline">\(z\)</span>-statistics.</p>
+<hr />
+</div>
+<div id="implementation-using-enrichwith" class="section level1">
+<h1>Implementation using <strong>enrichwith</strong></h1>
+<p>For implementing the iteration for bias reduction, we need functions that can compute the gradient of the log-likelihood, the observed and expected information matrix, and <span class="math inline">\(b(\theta)\)</span> at arbitrary values of <span class="math inline">\(\theta\)</span>.</p>
+<p>The <strong>enrichwith</strong> package can produce those functions for any <code>glm</code> object through the <code>auxiliary_functions</code> enrichment option (to see all available enrichment options for <code>glm</code> objects run <code>get_enrichment_options(modML)</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;enrichwith&quot;</span>)
+enriched_modML &lt;-<span class="st"> </span><span class="kw">enrich</span>(modML, <span class="dt">with =</span> <span class="st">&quot;auxiliary functions&quot;</span>)</code></pre></div>
+<p>Let’s extract the functions from the <code>enriched_modML</code> object.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Extract the ingredients for the quasi Fisher scoring iteration from the enriched glm object</span>
+gradient &lt;-<span class="st"> </span>enriched_modML$auxiliary_functions$score <span class="co"># gradient of the log-likelihood</span>
+information &lt;-<span class="st"> </span>enriched_modML$auxiliary_functions$information <span class="co"># information matrix</span>
+bias &lt;-<span class="st"> </span>enriched_modML$auxiliary_functions$bias <span class="co"># first-order bias</span></code></pre></div>
+<p>For the more technically minded, note here that the above functions are specific to <code>modML</code> in the sense that they look into a special environment for necessary objects like the model matrix, the model weights, the response vector, and so on.</p>
+<p>This stems from the way <strong>enrichwith</strong> has been implemented. In particular, if <code>create_enrichwith_skeleton</code> is used, the user/developer can directly implement enrichment options to enrich objects with functions that directly depend on other components in the object to be enriched.</p>
+<p>The following code chunk uses <code>enriched_modML</code> to implement the quasi Fisher scoring procedure for the analysis of the endometrial cancer data. For <code>p &lt;- length(theta_mle)</code> , the starting value for the parameter vector is set to <code>theta_current &lt;- rep(0, p)</code> , and the maximum number of iterations to <code>maxit &lt;- 100</code> . As stopping criterion, we use the absolute change in each parameter value with tolerance <code>epsilon &lt;- 1e-06</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The quasi Fisher scoring iteration using c(theta) = identity</span>
+for (k in <span class="kw">seq.int</span>(maxit)) {
+    s_vector &lt;-<span class="st"> </span><span class="kw">gradient</span>(theta_current)
+    i_matrix &lt;-<span class="st"> </span><span class="kw">information</span>(theta_current, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>)
+    b_vector &lt;-<span class="st"> </span><span class="kw">bias</span>(theta_current)
+    step &lt;-<span class="st"> </span><span class="kw">solve</span>(i_matrix) %*%<span class="st"> </span>s_vector -<span class="st"> </span>b_vector
+    theta_current &lt;-<span class="st"> </span>theta_current +<span class="st"> </span>step
+    <span class="co"># A stopping criterion</span>
+    if (<span class="kw">all</span>(<span class="kw">abs</span>(step) &lt;<span class="st"> </span>epsilon)) {
+        break
+    }
+}
+(theta_e &lt;-<span class="st"> </span><span class="kw">drop</span>(theta_current))</code></pre></div>
+<pre><code>## (Intercept)          NV          PI          EH 
+##  1.91460348  1.65892018 -0.01520487 -1.37987837</code></pre>
+<p>The estimation procedure took 8 iterations to converge, and, as expected, the estimates are numerically the same to the ones that <strong>brglm</strong> returned.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">all.equal</span>(theta_e, theta_brglm, <span class="dt">check.attributes =</span> <span class="ot">FALSE</span>, <span class="dt">tolerance =</span> epsilon)</code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<p>A set of alternative reduced-bias estimates can be obtained using <span class="math inline">\(c(\theta) = \left\{i(\theta)\right\}^{-1} j(\theta)\)</span>. Starting again at <code>theta_current &lt;- rep(0, p)</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The quasi Fisher scoring iteration using c(theta) = solve(i(theta)) %*% j(theta)</span>
+for (k in <span class="kw">seq.int</span>(maxit)) {
+    s_vector &lt;-<span class="st"> </span><span class="kw">gradient</span>(theta_current)
+    i_matrix &lt;-<span class="st"> </span><span class="kw">information</span>(theta_current, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>)
+    j_matrix &lt;-<span class="st"> </span><span class="kw">information</span>(theta_current, <span class="dt">type =</span> <span class="st">&quot;observed&quot;</span>)
+    b_vector &lt;-<span class="st"> </span><span class="kw">bias</span>(theta_current)
+    step &lt;-<span class="st"> </span><span class="kw">solve</span>(i_matrix) %*%<span class="st"> </span>(s_vector -<span class="st"> </span>j_matrix %*%<span class="st"> </span>b_vector)
+    theta_current &lt;-<span class="st"> </span>theta_current +<span class="st"> </span>step
+    <span class="co"># A stopping criterion</span>
+    if (<span class="kw">all</span>(<span class="kw">abs</span>(step) &lt;<span class="st"> </span>epsilon)) {
+        break
+    }
+}
+(theta_o &lt;-<span class="st"> </span><span class="kw">drop</span>(theta_current))</code></pre></div>
+<pre><code>## (Intercept)          NV          PI          EH 
+##  1.89707065  1.72815655 -0.01471219 -1.37254188</code></pre>
+<p>The estimation procedure took 9 iterations to converge.</p>
+<p>The ML estimates and the estimates from the two variants of the bias reduction method are</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">round</span>(<span class="kw">data.frame</span>(theta_mle, theta_e, theta_o), <span class="dv">3</span>)</code></pre></div>
+<pre><code>##             theta_mle theta_e theta_o
+## (Intercept)     2.181   1.915   1.897
+## NV              5.805   1.659   1.728
+## PI             -0.019  -0.015  -0.015
+## EH             -1.526  -1.380  -1.373</code></pre>
+<p>Note that the reduced-bias estimates have shrunk towards zero. This is typical for reduced-bias estimation in binomial-response GLMs <span class="citation">(see, for example, Cordeiro and McCullagh 1991, Section 8; Kosmidis 2007, Section 5.2; Kosmidis 2014 for shrinkage in cumulative link models)</span>.</p>
+<p>The corresponding <span class="math inline">\(z\)</span>-statistics are</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">se_theta_mle &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(<span class="kw">solve</span>(<span class="kw">information</span>(theta_mle, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>))))
+se_theta_e &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(<span class="kw">solve</span>(<span class="kw">information</span>(theta_e, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>))))
+se_theta_o &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(<span class="kw">solve</span>(<span class="kw">information</span>(theta_o, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>))))
+<span class="kw">round</span>(<span class="kw">data.frame</span>(<span class="dt">z_mle =</span> theta_mle/se_theta_mle,
+                 <span class="dt">z_br_e =</span> theta_e/se_theta_e,
+                 <span class="dt">z_br_o =</span> theta_o/se_theta_o), <span class="dv">3</span>)</code></pre></div>
+<pre><code>##              z_mle z_br_e z_br_o
+## (Intercept)  2.544  2.427  2.407
+## NV           0.009  2.220  2.215
+## PI          -0.799 -0.728 -0.701
+## EH          -3.523 -3.422 -3.411</code></pre>
+<p>The two variants for bias reduction result in slightly different reduced-bias estimates and <span class="math inline">\(z\)</span>-statistics, though the <span class="math inline">\(z\)</span>-statistics from both variants provide some evidence for the existence of an effect for <code>NV</code>.</p>
+<hr />
+</div>
+<div id="notes" class="section level1">
+<h1>Notes</h1>
+<p>A general family of bias reduction methods is described in <span class="citation">Kosmidis and Firth (2009)</span>.</p>
+<p>The quasi Fisher scoring iteration that has been described here is at the core of the <a href="https://github.com/ikosmidis/brglm2"><strong>brglm2</strong></a> R package, which provides various bias reduction methods for GLMs.</p>
+<hr />
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-agresti:15">
+<p>Agresti, A. 2015. <em>Foundations of Linear and Generalized Linear Models</em>. Wiley Series in Probability and Statistics. Wiley.</p>
+</div>
+<div id="ref-cordeiro:91">
+<p>Cordeiro, G. M., and P. McCullagh. 1991. “Bias Correction in Generalized Linear Models.” <em>Rssb</em> 53 (3): 629–43.</p>
+</div>
+<div id="ref-cox:68">
+<p>Cox, D. R., and E. J. Snell. 1968. “A General Definition of Residuals (with Discussion).” <em>Journal of the Royal Statistical Society, Series B: Methodological</em> 30: 248–75.</p>
+</div>
+<div id="ref-firth:93">
+<p>Firth, D. 1993. “Bias Reduction of Maximum Likelihood Estimates.” <em>Biometrika</em> 80 (1): 27–38.</p>
+</div>
+<div id="ref-heinze:02">
+<p>Heinze, G., and M. Schemper. 2002. “A Solution to the Problem of Separation in Logistic Regression.” <em>Statistics in Medicine</em> 21: 2409–19.</p>
+</div>
+<div id="ref-kosmidis:07">
+<p>Kosmidis, I. 2007. “Bias Reduction in Exponential Family Nonlinear Models.” PhD thesis, Department of Statistics, University of Warwick. <a href="http://www.ucl.ac.uk/~ucakiko/files/ikosmidis_thesis.pdf" class="uri">http://www.ucl.ac.uk/~ucakiko/files/ikosmidis_thesis.pdf</a>.</p>
+</div>
+<div id="ref-kosmidis:14a">
+<p>———. 2014. “Improved Estimation in Cumulative Link Models.” <em>Journal of the Royal Statistical Society, Series B: Methodological</em> 76 (1): 169–96. doi:<a href="https://doi.org/10.1111/rssb.12025">10.1111/rssb.12025</a>.</p>
+</div>
+<div id="ref-kosmidis:09">
+<p>Kosmidis, I., and D. Firth. 2009. “Bias Reduction in Exponential Family Nonlinear Models.” <em>Biometrika</em> 96 (4): 793–804. doi:<a href="https://doi.org/10.1093/biomet/asp055">10.1093/biomet/asp055</a>.</p>
+</div>
+<div id="ref-kosmidis:10">
+<p>———. 2010. “A Generic Algorithm for Reducing Bias in Parametric Estimation.” <em>Electronic Journal of Statistics</em> 4: 1097–1112. doi:<a href="https://doi.org/10.1214/10-EJS579">10.1214/10-EJS579</a>.</p>
+</div>
+<div id="ref-kosmidis:11">
+<p>———. 2011. “Multinomial Logit Bias Reduction via the Poisson Log-Linear Model.” <em>Biometrika</em> 98 (3): 755–59.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
