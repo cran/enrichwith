@@ -1,7 +1,56 @@
+
+
 + [ ] Partial matching for option names
 + [ ] How to update a template with new options?
 + [X] Implement bias and observed information for glm objects
 + [X] Add citation
 + [X] Add "enriched_" to the primary class of the object
-+ [ ] Write a small vignette
++ [X] Add new simulate methods that do not estimate dispersion internalls
++ [X] Write a small vignette
+  [2017-01-15]
++ [X] Rename "enriching glm objects" to "implementing a bias reduction method for glms"
+  [2017-01-15]
++ [ ] Add warning to simulate method if fitted values are not admissible
++ [X] New case study in enriching glm objects to include
+  object-specific simulators
+  [2017-01-15]
++ [X] Enrich "lm" objects
+  [2017-01-15]
++ [X] Update README and the package goals
+  [2017-03-06 Mon]
++ [ ] Write an lmplus and glmplus function
++ [X] Score components
+  [2017-03-05 Sun]
++ [X] qmodel, pmodel, dmodel
+  [2017-03-05 Sun]
++ [X] Take care of weights in dmodel, pmodel.
+  [2017-03-06 Mon]
++ [X] Vignettes for dpq_model
++ JSS submission
++ [ ] lm pmodel, dmodel, qmodel ...
 
+Title: enrichwith: Templates and facilities to enrich S3 objects with
+new relevant components
+
+* Introduction
+
+  Why do we need it, what gap does it fill?
+
+* Package structure
+* Enrichment options
+
+** get_enrichment_options
+
+** `link-glm` objects
+
+** `family` objects
+
+** `glm` objects
+
+* Templates
+
+** create_enrichwith_skeleton
+
+** compute_* functions
+
+** get_* methods,

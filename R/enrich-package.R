@@ -60,7 +60,7 @@ enrich <- function(object, with, ...) {
 }
 
 #' Generic method for getting available options for the enrichment
-#' objects
+#' of objects
 #'
 #' @aliases print.enrichment_options
 #'
@@ -85,3 +85,50 @@ get_enrichment_options <- function(object, option, all_options) {
     UseMethod("get_enrichment_options")
 }
 
+
+#' Generic method for extracting or computing auxiliary functions for
+#' objects
+#' @param object the object to be enriched or the enriched object
+#' @param ... currently not used
+#' @export
+get_auxiliary_functions <- function(object, ...) {
+    UseMethod("get_auxiliary_functions")
+}
+
+#' Generic method for extracting or computing a function that
+#' returns the scores for modelling objects
+#' @param object the object to be enriched or the enriched object
+#' @param ... currently not used
+#' @export
+get_score_function <- function(object, ...) {
+    UseMethod("get_score_function")
+}
+
+
+#' Generic method for extracting or computing a function that returns
+#' the information matrix for modelling objects
+#' @param object the object to be enriched or the enriched object
+#' @param ... currently not used
+#' @export
+get_information_function <- function(object, ...) {
+    UseMethod("get_information_function")
+}
+
+
+#' Generic method for extracting or computing a function that returns
+#' the bias for the parameters in modelling objects
+#' @param object the object to be enriched or the enriched object
+#' @param ... currently not used
+#' @export
+get_bias_function <- function(object, ...) {
+    UseMethod("get_bias_function")
+}
+
+#' Generic method for extracting or computing a simulate function for
+#' modelling objects
+#' @param object the object to be enriched or the enriched object
+#' @param ... currently not used
+#' @export
+get_simulate_function <- function(object, ...) {
+    UseMethod("get_simulate_function")
+}

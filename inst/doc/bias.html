@@ -76,8 +76,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>The <strong>enrichwith</strong> package provides the <code>enrich</code> method to enrich list-like R objects with new, relevant components. The resulting objects preserve their class, so all methods associated with them still apply.</p>
-<p>This vignette demonstrates some of the available enrichment options for <code>glm</code> objects in <a href="https://github.com/ikosmidis/enrichwith"><strong>enrichwith</strong></a>. In particular, the enriched <code>glm</code> objects are used here to implement a <em>quasi <a href="https://en.wikipedia.org/wiki/Scoring_algorithm">Fisher scoring</a></em> procedure for computing reduced-bias estimates in <a href="https://en.wikipedia.org/wiki/Generalized_linear_model">generalized linear models</a> (GLMs). <span class="citation">Kosmidis and Firth (2010)</span> describe a parallel quasi <a href="https://en.wikipedia.org/wiki/Newton%27s_method">Newton-Raphson</a> procedure.</p>
+<p>The <a href="https://github.com/ikosmidis/enrichwith"><strong>enrichwith</strong></a> package provides the <code>enrich</code> method to enrich list-like R objects with new, relevant components. The resulting objects preserve their class, so all methods associated with them still apply.</p>
+<p>This vignette is a short case study demonstrating how enriched <code>glm</code> objects can be used to implement a <em>quasi <a href="https://en.wikipedia.org/wiki/Scoring_algorithm">Fisher scoring</a></em> procedure for computing reduced-bias estimates in <a href="https://en.wikipedia.org/wiki/Generalized_linear_model">generalized linear models</a> (GLMs). <span class="citation">Kosmidis and Firth (2010)</span> describe a parallel quasi <a href="https://en.wikipedia.org/wiki/Newton%27s_method">Newton-Raphson</a> procedure.</p>
 <hr />
 </div>
 <div id="endometrial-cancer-data" class="section level1">
@@ -86,7 +86,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Get the data from the online supplmementary material of Agresti (2015)</span>
 endometrial_url &lt;-<span class="st"> </span><span class="kw">url</span>(<span class="st">&quot;http://www.stat.ufl.edu/~aa/glm/data/Endometrial.dat&quot;</span>)
 endometrial &lt;-<span class="st"> </span><span class="kw">read.table</span>(endometrial_url, <span class="dt">header =</span> <span class="ot">TRUE</span>)
-modML &lt;-<span class="st"> </span><span class="kw">glm</span>(HG ~<span class="st"> </span>NV +<span class="st"> </span>PI +<span class="st"> </span>EH, <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="st">&quot;probit&quot;</span>), <span class="dt">data =</span> endometrial)
+modML &lt;-<span class="st"> </span><span class="kw">glm</span>(HG <span class="op">~</span><span class="st"> </span>NV <span class="op">+</span><span class="st"> </span>PI <span class="op">+</span><span class="st"> </span>EH, <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="st">&quot;probit&quot;</span>), <span class="dt">data =</span> endometrial)
 theta_mle &lt;-<span class="st"> </span><span class="kw">coef</span>(modML)
 <span class="kw">summary</span>(modML)</code></pre></div>
 <pre><code>## 
@@ -116,10 +116,10 @@ theta_mle &lt;-<span class="st"> </span><span class="kw">coef</span>(modML)
 ## Number of Fisher Scoring iterations: 17</code></pre>
 <p>As is the case for the logistic regression in <span class="citation">Heinze and Schemper (2002)</span>, the maximum likelihood (ML) estimate of the parameter for <code>NV</code> is actually infinite. The reported, apparently finite value is merely due to false convergence of the iterative estimation procedure. The same is true for the estimated standard error, and, hence the value <code>r round(coef(summary(modML))[&quot;NV&quot;, &quot;z value&quot;], 3)</code> for the <span class="math inline">\(z\)</span>-statistic cannot be trusted for inference on the size of the effect for <code>NV</code>.</p>
 <p>In categorical-response models like the above, the bias reduction method in <span class="citation">Firth (1993)</span> has been found to result in finite estimates even when the ML ones are infinite <span class="citation">(see, Heinze and Schemper 2002, for logistic regressions; Kosmidis and Firth 2011, for multinomial regressions; Kosmidis 2014, for cumulative link models)</span>.</p>
-<p>One of the variants of that bias reduction method is implemented in the <a href="https://cran.r-project.org/web/packages/brglm/brglm.pdf"><strong>brglm</strong></a> R package, which estimates binomial-reponse GLMs using iterative ML fits on binomial pseudo-data <span class="citation">(see, Kosmidis 2007, Chapter 5, for details)</span>. The reduced-bias estimates for the probit regression on the endometrial data can be computed as follows.</p>
+<p>One of the variants of that bias reduction method is implemented in the <a href="https://CRAN.R-project.org/package=brglm"><strong>brglm</strong></a> R package, which estimates binomial-reponse GLMs using iterative ML fits on binomial pseudo-data <span class="citation">(see, Kosmidis 2007, Chapter 5, for details)</span>. The reduced-bias estimates for the probit regression on the endometrial data can be computed as follows.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;brglm&quot;</span>)</code></pre></div>
 <pre><code>## Loading required package: profileModel</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">modBR &lt;-<span class="st"> </span><span class="kw">brglm</span>(HG ~<span class="st"> </span>NV +<span class="st"> </span>PI +<span class="st"> </span>EH, <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="st">&quot;probit&quot;</span>), <span class="dt">data =</span> endometrial)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">modBR &lt;-<span class="st"> </span><span class="kw">brglm</span>(HG <span class="op">~</span><span class="st"> </span>NV <span class="op">+</span><span class="st"> </span>PI <span class="op">+</span><span class="st"> </span>EH, <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="st">&quot;probit&quot;</span>), <span class="dt">data =</span> endometrial)
 theta_brglm &lt;-<span class="st"> </span><span class="kw">coef</span>(modBR)
 <span class="kw">summary</span>(modBR)</code></pre></div>
 <pre><code>## 
@@ -164,42 +164,46 @@ b(\theta^{(k)})\]</span> where <span class="math inline">\(\theta^{(k)}\)</span>
 enriched_modML &lt;-<span class="st"> </span><span class="kw">enrich</span>(modML, <span class="dt">with =</span> <span class="st">&quot;auxiliary functions&quot;</span>)</code></pre></div>
 <p>Let’s extract the functions from the <code>enriched_modML</code> object.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Extract the ingredients for the quasi Fisher scoring iteration from the enriched glm object</span>
-gradient &lt;-<span class="st"> </span>enriched_modML$auxiliary_functions$score <span class="co"># gradient of the log-likelihood</span>
-information &lt;-<span class="st"> </span>enriched_modML$auxiliary_functions$information <span class="co"># information matrix</span>
-bias &lt;-<span class="st"> </span>enriched_modML$auxiliary_functions$bias <span class="co"># first-order bias</span></code></pre></div>
+gradient &lt;-<span class="st"> </span>enriched_modML<span class="op">$</span>auxiliary_functions<span class="op">$</span>score <span class="co"># gradient of the log-likelihood</span>
+information &lt;-<span class="st"> </span>enriched_modML<span class="op">$</span>auxiliary_functions<span class="op">$</span>information <span class="co"># information matrix</span>
+bias &lt;-<span class="st"> </span>enriched_modML<span class="op">$</span>auxiliary_functions<span class="op">$</span>bias <span class="co"># first-order bias</span></code></pre></div>
 <p>For the more technically minded, note here that the above functions are specific to <code>modML</code> in the sense that they look into a special environment for necessary objects like the model matrix, the model weights, the response vector, and so on.</p>
 <p>This stems from the way <strong>enrichwith</strong> has been implemented. In particular, if <code>create_enrichwith_skeleton</code> is used, the user/developer can directly implement enrichment options to enrich objects with functions that directly depend on other components in the object to be enriched.</p>
 <p>The following code chunk uses <code>enriched_modML</code> to implement the quasi Fisher scoring procedure for the analysis of the endometrial cancer data. For <code>p &lt;- length(theta_mle)</code> , the starting value for the parameter vector is set to <code>theta_current &lt;- rep(0, p)</code> , and the maximum number of iterations to <code>maxit &lt;- 100</code> . As stopping criterion, we use the absolute change in each parameter value with tolerance <code>epsilon &lt;- 1e-06</code></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The quasi Fisher scoring iteration using c(theta) = identity</span>
-for (k in <span class="kw">seq.int</span>(maxit)) {
+<span class="cf">for</span> (k <span class="cf">in</span> <span class="kw">seq.int</span>(maxit)) {
     s_vector &lt;-<span class="st"> </span><span class="kw">gradient</span>(theta_current)
     i_matrix &lt;-<span class="st"> </span><span class="kw">information</span>(theta_current, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>)
     b_vector &lt;-<span class="st"> </span><span class="kw">bias</span>(theta_current)
-    step &lt;-<span class="st"> </span><span class="kw">solve</span>(i_matrix) %*%<span class="st"> </span>s_vector -<span class="st"> </span>b_vector
-    theta_current &lt;-<span class="st"> </span>theta_current +<span class="st"> </span>step
+    step &lt;-<span class="st"> </span><span class="kw">solve</span>(i_matrix) <span class="op">%*%</span><span class="st"> </span>s_vector <span class="op">-</span><span class="st"> </span>b_vector
+    theta_current &lt;-<span class="st"> </span>theta_current <span class="op">+</span><span class="st"> </span>step
     <span class="co"># A stopping criterion</span>
-    if (<span class="kw">all</span>(<span class="kw">abs</span>(step) &lt;<span class="st"> </span>epsilon)) {
-        break
+    <span class="cf">if</span> (<span class="kw">all</span>(<span class="kw">abs</span>(step) <span class="op">&lt;</span><span class="st"> </span>epsilon)) {
+        <span class="cf">break</span>
     }
 }
 (theta_e &lt;-<span class="st"> </span><span class="kw">drop</span>(theta_current))</code></pre></div>
 <pre><code>## (Intercept)          NV          PI          EH 
-##  1.91460348  1.65892018 -0.01520487 -1.37987837</code></pre>
+##  1.91460348  1.65892018 -0.01520487 -1.37987837 
+## attr(,&quot;coefficients&quot;)
+## [1] 0 0 0 0
+## attr(,&quot;dispersion&quot;)
+## [1] 1</code></pre>
 <p>The estimation procedure took 8 iterations to converge, and, as expected, the estimates are numerically the same to the ones that <strong>brglm</strong> returned.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">all.equal</span>(theta_e, theta_brglm, <span class="dt">check.attributes =</span> <span class="ot">FALSE</span>, <span class="dt">tolerance =</span> epsilon)</code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 <p>A set of alternative reduced-bias estimates can be obtained using <span class="math inline">\(c(\theta) = \left\{i(\theta)\right\}^{-1} j(\theta)\)</span>. Starting again at <code>theta_current &lt;- rep(0, p)</code></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The quasi Fisher scoring iteration using c(theta) = solve(i(theta)) %*% j(theta)</span>
-for (k in <span class="kw">seq.int</span>(maxit)) {
+<span class="cf">for</span> (k <span class="cf">in</span> <span class="kw">seq.int</span>(maxit)) {
     s_vector &lt;-<span class="st"> </span><span class="kw">gradient</span>(theta_current)
     i_matrix &lt;-<span class="st"> </span><span class="kw">information</span>(theta_current, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>)
     j_matrix &lt;-<span class="st"> </span><span class="kw">information</span>(theta_current, <span class="dt">type =</span> <span class="st">&quot;observed&quot;</span>)
     b_vector &lt;-<span class="st"> </span><span class="kw">bias</span>(theta_current)
-    step &lt;-<span class="st"> </span><span class="kw">solve</span>(i_matrix) %*%<span class="st"> </span>(s_vector -<span class="st"> </span>j_matrix %*%<span class="st"> </span>b_vector)
-    theta_current &lt;-<span class="st"> </span>theta_current +<span class="st"> </span>step
+    step &lt;-<span class="st"> </span><span class="kw">solve</span>(i_matrix) <span class="op">%*%</span><span class="st"> </span>(s_vector <span class="op">-</span><span class="st"> </span>j_matrix <span class="op">%*%</span><span class="st"> </span>b_vector)
+    theta_current &lt;-<span class="st"> </span>theta_current <span class="op">+</span><span class="st"> </span>step
     <span class="co"># A stopping criterion</span>
-    if (<span class="kw">all</span>(<span class="kw">abs</span>(step) &lt;<span class="st"> </span>epsilon)) {
-        break
+    <span class="cf">if</span> (<span class="kw">all</span>(<span class="kw">abs</span>(step) <span class="op">&lt;</span><span class="st"> </span>epsilon)) {
+        <span class="cf">break</span>
     }
 }
 (theta_o &lt;-<span class="st"> </span><span class="kw">drop</span>(theta_current))</code></pre></div>
@@ -218,9 +222,9 @@ for (k in <span class="kw">seq.int</span>(maxit)) {
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">se_theta_mle &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(<span class="kw">solve</span>(<span class="kw">information</span>(theta_mle, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>))))
 se_theta_e &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(<span class="kw">solve</span>(<span class="kw">information</span>(theta_e, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>))))
 se_theta_o &lt;-<span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">diag</span>(<span class="kw">solve</span>(<span class="kw">information</span>(theta_o, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>))))
-<span class="kw">round</span>(<span class="kw">data.frame</span>(<span class="dt">z_mle =</span> theta_mle/se_theta_mle,
-                 <span class="dt">z_br_e =</span> theta_e/se_theta_e,
-                 <span class="dt">z_br_o =</span> theta_o/se_theta_o), <span class="dv">3</span>)</code></pre></div>
+<span class="kw">round</span>(<span class="kw">data.frame</span>(<span class="dt">z_mle =</span> theta_mle<span class="op">/</span>se_theta_mle,
+                 <span class="dt">z_br_e =</span> theta_e<span class="op">/</span>se_theta_e,
+                 <span class="dt">z_br_o =</span> theta_o<span class="op">/</span>se_theta_o), <span class="dv">3</span>)</code></pre></div>
 <pre><code>##              z_mle z_br_e z_br_o
 ## (Intercept)  2.544  2.427  2.407
 ## NV           0.009  2.220  2.215

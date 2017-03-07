@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Ioannis Kosmidis" />
+
+<meta name="date" content="2017-03-07" />
+
+<title>Enriching glm objects</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Enriching <code>glm</code> objects</h1>
+<h4 class="author"><em><a href="http://www.ucl.ac.uk/~ucakiko/">Ioannis Kosmidis</a></em></h4>
+<h4 class="date"><em>2017-03-07</em></h4>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>The <a href="https://github.com/ikosmidis/enrichwith"><strong>enrichwith</strong></a> R package provides the <code>enrich</code> method to enrich list-like R objects with new, relevant components. The resulting objects preserve their class, so all methods associated with them still apply.</p>
+<p>This vignette is a demo of the available enrichment options for <code>glm</code> objects.</p>
+</div>
+<div id="clotting-data-set" class="section level1">
+<h1>Clotting data set</h1>
+<p>The following data set is provided in <span class="citation">McCullagh and Nelder (1989 Section 8.4)</span> and consists of observations on <span class="math inline">\(n = 18\)</span> mean clotting times of blood in seconds (<code>time</code>) for each combination of nine percentage concentrations of normal plasma (<code>conc</code>) and two lots of clotting agent (<code>lot</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clotting &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">conc =</span> <span class="kw">c</span>(<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">15</span>,<span class="dv">20</span>,<span class="dv">30</span>,<span class="dv">40</span>,<span class="dv">60</span>,<span class="dv">80</span>,<span class="dv">100</span>,
+                                <span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">15</span>,<span class="dv">20</span>,<span class="dv">30</span>,<span class="dv">40</span>,<span class="dv">60</span>,<span class="dv">80</span>,<span class="dv">100</span>),
+                       <span class="dt">time =</span> <span class="kw">c</span>(<span class="dv">118</span>, <span class="dv">58</span>, <span class="dv">42</span>, <span class="dv">35</span>, <span class="dv">27</span>, <span class="dv">25</span>, <span class="dv">21</span>, <span class="dv">19</span>, <span class="dv">18</span>,
+                                <span class="dv">69</span>, <span class="dv">35</span>, <span class="dv">26</span>, <span class="dv">21</span>, <span class="dv">18</span>, <span class="dv">16</span>, <span class="dv">13</span>, <span class="dv">12</span>, <span class="dv">12</span>),
+                       <span class="dt">lot =</span> <span class="kw">factor</span>(<span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">1</span>, <span class="dv">9</span>), <span class="kw">rep</span>(<span class="dv">2</span>, <span class="dv">9</span>))))</code></pre></div>
+<p><span class="citation">McCullagh and Nelder (1989 Section 8.4)</span> fitted a series of nested generalized linear models assuming that the times are realisations of independent <a href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a> random variables whose mean varies appropriately with concentration and lot. In particular, <span class="citation">McCullagh and Nelder (1989)</span> linked the inverse mean of the gamma random variables to the linear predictors <code>~ 1</code>, <code>~ log(conc)</code>, <code>~ log(conc) + lot</code>, <code>~ log(conc) * lot</code> and carried out an analysis of deviance to conclude that the <code>~ log(u) * lot</code> provides the best explanation of clotting times. The really close fit of that model to the data can be seen in the figure below.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;ggplot2&quot;</span>)
+clottingML &lt;-<span class="st"> </span><span class="kw">glm</span>(time <span class="op">~</span><span class="st"> </span><span class="kw">log</span>(conc) <span class="op">*</span><span class="st"> </span>lot, <span class="dt">family =</span> Gamma, <span class="dt">data =</span> clotting)
+alpha &lt;-<span class="st"> </span><span class="fl">0.01</span>
+pr_out &lt;-<span class="st"> </span><span class="kw">predict</span>(clottingML, <span class="dt">type =</span> <span class="st">&quot;response&quot;</span>, <span class="dt">se.fit =</span> <span class="ot">TRUE</span>)
+new_data &lt;-<span class="st"> </span>clotting
+new_data<span class="op">$</span>time &lt;-<span class="st"> </span>pr_out<span class="op">$</span>fit
+new_data<span class="op">$</span>type &lt;-<span class="st"> &quot;fitted&quot;</span>
+clotting<span class="op">$</span>type &lt;-<span class="st"> &quot;observed&quot;</span>
+all_data &lt;-<span class="st"> </span><span class="kw">rbind</span>(clotting, new_data)
+new_data &lt;-<span class="st"> </span><span class="kw">within</span>(new_data, {
+    low &lt;-<span class="st"> </span>pr_out<span class="op">$</span>fit <span class="op">-</span><span class="st"> </span><span class="kw">qnorm</span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>alpha<span class="op">/</span><span class="dv">2</span>) <span class="op">*</span><span class="st"> </span>pr_out<span class="op">$</span>se.fit
+    upp &lt;-<span class="st"> </span>pr_out<span class="op">$</span>fit <span class="op">+</span><span class="st"> </span><span class="kw">qnorm</span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>alpha<span class="op">/</span><span class="dv">2</span>) <span class="op">*</span><span class="st"> </span>pr_out<span class="op">$</span>se.fit
+})
+<span class="kw">ggplot</span>(all_data) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(conc, time, <span class="dt">col =</span> type), <span class="dt">alpha =</span> <span class="fl">0.8</span>) <span class="op">+</span>
+<span class="st">    </span><span class="kw">geom_segment</span>(<span class="dt">data =</span> new_data, <span class="kw">aes</span>(<span class="dt">x =</span> conc, <span class="dt">y =</span> low, <span class="dt">xend =</span> conc, <span class="dt">yend =</span> upp, <span class="dt">col =</span> type)) <span class="op">+</span>
+<span class="st">    </span><span class="kw">facet_grid</span>(. <span class="op">~</span><span class="st"> </span>lot) <span class="op">+</span><span class="st"> </span><span class="kw">theme_bw</span>() <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;top&quot;</span>)</code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="key-quantities-in-likelihood-inference" class="section level1">
+<h1>Key quantities in likelihood inference</h1>
+<div id="score-function" class="section level2">
+<h2>Score function</h2>
+<p>The <a href="https://en.wikipedia.org/wiki/Score_(statistics)">score function</a> is the gradient of the log-likelihood and is a key object for likelihood inference.</p>
+<p>The <strong>enrichwith</strong> R package provides methods for the enrichment of <code>glm</code> objects with the corresponding score function. This can either be done by enriching the <code>glm</code> object with <code>auxiliary_functions</code> and then extracting the score function</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;enrichwith&quot;</span>)
+enriched_clottingML &lt;-<span class="st"> </span><span class="kw">enrich</span>(clottingML, <span class="dt">with =</span> <span class="st">&quot;auxiliary functions&quot;</span>)
+scores_clottingML &lt;-<span class="st"> </span>enriched_clottingML<span class="op">$</span>auxiliary_functions<span class="op">$</span>score</code></pre></div>
+<p>or directly using the <code>get_score_function</code> convenience method</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">scores_clottingML &lt;-<span class="st"> </span><span class="kw">get_score_function</span>(clottingML)</code></pre></div>
+<p>By definition, the score function has to have zero components when evaluated at the maximum likelihood estimates (only numerically zero here).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">scores_clottingML</span>()</code></pre></div>
+<pre><code>##    (Intercept)      log(conc)           lot2 log(conc):lot2     dispersion 
+##   1.227818e-05   2.253249e-05   6.113431e-07   1.548145e-06   1.647695e-09 
+## attr(,&quot;coefficients&quot;)
+##    (Intercept)      log(conc)           lot2 log(conc):lot2 
+##   -0.016554382    0.015343115   -0.007354088    0.008256099 
+## attr(,&quot;dispersion&quot;)
+##  dispersion 
+## 0.001632971</code></pre>
+</div>
+<div id="information-matrix" class="section level2">
+<h2>Information matrix</h2>
+<p>Another key quantity in likelihood inference is the <a href="https://en.wikipedia.org/wiki/Fisher_information">expected information</a>.</p>
+<p>The <code>auxiliary_functions</code> enrichment option of the <code>enrich</code> method enriches a <code>glm</code> object with a function for the evaluation of the expected information.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">info_clottingML &lt;-<span class="st"> </span>enriched_clottingML<span class="op">$</span>auxiliary_functions<span class="op">$</span>information</code></pre></div>
+<p>and can also be computed directly using the <code>get_information_function</code> method</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">info_clottingML &lt;-<span class="st"> </span><span class="kw">get_information_function</span>(clottingML)</code></pre></div>
+<p>One of the uses of the expected information is the calculation of standard errors for the model parameters. The <code>stats::summary.glm</code> function already does that for <code>glm</code> objects, estimating the dispersion parameter (if any) using Pearson residuals.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">summary_clottingML &lt;-<span class="st"> </span><span class="kw">summary</span>(clottingML)</code></pre></div>
+<p>Duly, <code>info_clottingML</code> returns (numerically) the same standard errors as the <code>summary</code> method does.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">summary_std_errors &lt;-<span class="st"> </span><span class="kw">coef</span>(summary_clottingML)[, <span class="st">&quot;Std. Error&quot;</span>]
+einfo &lt;-<span class="st"> </span><span class="kw">info_clottingML</span>(<span class="dt">dispersion =</span> summary_clottingML<span class="op">$</span>dispersion)
+<span class="kw">all.equal</span>(<span class="kw">sqrt</span>(<span class="kw">diag</span>(<span class="kw">solve</span>(einfo)))[<span class="dv">1</span><span class="op">:</span><span class="dv">4</span>], summary_std_errors, <span class="dt">tolerance =</span> <span class="fl">1e-05</span>)</code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<p>Another estimate of the standard errors results by the <a href="https://en.wikipedia.org/wiki/Observed_information">observed information</a>, which is the negative <a href="https://en.wikipedia.org/wiki/Hessian_matrix">Hessian matrix</a> of the log-likelihood.</p>
+<p>At least at the time of writting the current vignette, there appears to be no general implementation of the observed information for <code>glm</code> objects. I guess the reason for that is the dependence of the observed information on higher-order derivatives of the inverse link and variance functions, which are not readily available in base R.</p>
+<p><strong>enrichwith</strong> provides options for the enrichment of <code>link-glm</code> and <code>family</code> objects with such derivatives (see <code>?enrich.link-glm</code> and <code>?enrich.family</code> for details), and, based on those allows the enrichment of <code>glm</code> objects with a function to compute the observed information.</p>
+<p>The observed and the expected information for the regression parameters coincide for GLMs with canonical link, like <code>clottingML</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">oinfo &lt;-<span class="st"> </span><span class="kw">info_clottingML</span>(<span class="dt">dispersion =</span> summary_clottingML<span class="op">$</span>dispersion, <span class="dt">type =</span> <span class="st">&quot;observed&quot;</span>)
+<span class="kw">all.equal</span>(oinfo[<span class="dv">1</span><span class="op">:</span><span class="dv">4</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>], einfo[<span class="dv">1</span><span class="op">:</span><span class="dv">4</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>])</code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<p>which is not generally true for a <code>glm</code> with a non-canonical link, as seen below.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clottingML_log &lt;-<span class="st"> </span><span class="kw">update</span>(clottingML, <span class="dt">family =</span> <span class="kw">Gamma</span>(<span class="st">&quot;log&quot;</span>))
+summary_clottingML_log &lt;-<span class="st"> </span><span class="kw">summary</span>(clottingML_log)
+info_clottingML_log &lt;-<span class="st"> </span><span class="kw">get_information_function</span>(clottingML_log)
+einfo_log &lt;-<span class="st"> </span><span class="kw">info_clottingML_log</span>(<span class="dt">dispersion =</span> summary_clottingML_log<span class="op">$</span>dispersion, <span class="dt">type =</span> <span class="st">&quot;expected&quot;</span>)
+oinfo_log &lt;-<span class="st"> </span><span class="kw">info_clottingML_log</span>(<span class="dt">dispersion =</span> summary_clottingML_log<span class="op">$</span>dispersion, <span class="dt">type =</span> <span class="st">&quot;observed&quot;</span>)
+<span class="kw">round</span>(einfo_log, <span class="dv">3</span>)</code></pre></div>
+<pre><code>##                (Intercept) log(conc)     lot2 log(conc):lot2 dispersion
+## (Intercept)        757.804  2508.115  378.902       1254.058       0.00
+## log(conc)         2508.115  8971.520 1254.058       4485.760       0.00
+## lot2               378.902  1254.058  378.902       1254.058       0.00
+## log(conc):lot2    1254.058  4485.760 1254.058       4485.760       0.00
+## dispersion           0.000     0.000    0.000          0.000   16078.16
+## attr(,&quot;coefficients&quot;)
+##    (Intercept)      log(conc)           lot2 log(conc):lot2 
+##     5.50322528    -0.60191618    -0.58447142     0.03448168 
+## attr(,&quot;dispersion&quot;)
+## [1] 0.02375284</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">round</span>(oinfo_log, <span class="dv">3</span>)</code></pre></div>
+<pre><code>##                (Intercept) log(conc)     lot2 log(conc):lot2 dispersion
+## (Intercept)        757.804  2508.114  378.902       1254.057      0.000
+## log(conc)         2508.114  9056.792 1254.057       4527.583     -0.041
+## lot2               378.902  1254.057  378.902       1254.057      0.000
+## log(conc):lot2    1254.057  4527.583 1254.057       4527.583     -0.018
+## dispersion           0.000    -0.041    0.000         -0.018   7610.128
+## attr(,&quot;coefficients&quot;)
+##    (Intercept)      log(conc)           lot2 log(conc):lot2 
+##     5.50322528    -0.60191618    -0.58447142     0.03448168 
+## attr(,&quot;dispersion&quot;)
+## [1] 0.02375284</code></pre>
+</div>
+<div id="score-tests" class="section level2">
+<h2>Score tests</h2>
+<p>We can now use <code>scores_clottingML</code> and <code>info_clottingML</code> to carry out <a href="https://en.wikipedia.org/wiki/Score_test">a score test</a> to compare nested models.</p>
+<p>If <span class="math inline">\(l_\psi(\psi, \lambda)\)</span> is the gradient of the log-likelihood with respect to <span class="math inline">\(\psi\)</span> evaluated at <span class="math inline">\(\psi\)</span> and <span class="math inline">\(\lambda\)</span>, <span class="math inline">\(i^{\psi\psi}(\psi, \lambda)\)</span> is the <span class="math inline">\((\psi, \psi)\)</span> block of the inverse of the expected information matrix, and <span class="math inline">\(\hat\lambda_\psi\)</span> is the maximum likelihood estimator of <span class="math inline">\(\lambda\)</span> for fixed <span class="math inline">\(\psi\)</span>, then, assuming that the model is adequate <span class="math display">\[
+l_\psi(\psi, \hat\lambda_\psi)^\top i^{\psi\psi}(\psi,\hat\lambda_\psi) l_\psi(\psi, \hat\lambda_\psi)
+\]</span> has an asymptotic <span class="math inline">\(\chi^2_{dim(\psi)}\)</span> distribution.</p>
+<p>The following code chunk computes the maximum likelihood estimates when the parameters for <code>lot</code> and <code>log(conc):lot</code> are fixed to zero (<span class="math inline">\(\hat\lambda\psi\)</span> for <span class="math inline">\(\psi = 0\)</span> above), along with the score and expected information matrix evaluated at them ($l(,_) and <span class="math inline">\(i(\psi,\hat\lambda_\psi)\)</span>, above).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clottingML_nested &lt;-<span class="st"> </span><span class="kw">update</span>(clottingML, . <span class="op">~</span><span class="st"> </span><span class="kw">log</span>(conc))
+enriched_clottingML_nested &lt;-<span class="st"> </span><span class="kw">enrich</span>(clottingML_nested, <span class="dt">with =</span> <span class="st">&quot;mle of dispersion&quot;</span>)
+coef_full &lt;-<span class="st"> </span><span class="kw">coef</span>(clottingML)
+coef_hypothesis &lt;-<span class="st"> </span><span class="kw">structure</span>(<span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(coef_full)), <span class="dt">names =</span> <span class="kw">names</span>(coef_full))
+coef_hypothesis_short &lt;-<span class="st"> </span><span class="kw">coef</span>(enriched_clottingML_nested, <span class="dt">model =</span> <span class="st">&quot;mean&quot;</span>)
+coef_hypothesis[<span class="kw">names</span>(coef_hypothesis_short)] &lt;-<span class="st"> </span>coef_hypothesis_short
+disp_hypothesis &lt;-<span class="st"> </span><span class="kw">coef</span>(enriched_clottingML_nested, <span class="dt">model =</span> <span class="st">&quot;dispersion&quot;</span>)
+scores &lt;-<span class="st"> </span><span class="kw">scores_clottingML</span>(coef_hypothesis, disp_hypothesis)
+info &lt;-<span class="st"> </span><span class="kw">info_clottingML</span>(coef_hypothesis, disp_hypothesis)</code></pre></div>
+<p>The object <code>enriched_clottingML_nested</code> inherits from <code>enriched_glm</code>, <code>glm</code> and <code>lm</code>, and, as illustrated above, <strong>enrichwith</strong> provides a corresponding <code>coef</code> method to extract the estimates for the mean regression parameters and/or the estimate for the dispersion parameter.</p>
+<p>The score statiistic is then</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(score_statistic &lt;-<span class="st"> </span><span class="kw">drop</span>(scores<span class="op">%*%</span><span class="kw">solve</span>(info)<span class="op">%*%</span>scores))</code></pre></div>
+<pre><code>## [1] 17.15989</code></pre>
+<p>which gives a p-value of</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">pchisq</span>(score_statistic, <span class="dv">2</span>, <span class="dt">lower.tail =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## [1] 0.000187835</code></pre>
+<p>For comparison, the Wald statistic for the same hypothesis is</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">coef_full[<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>]<span class="op">%*%</span><span class="kw">solve</span>(<span class="kw">solve</span>(info)[<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>, <span class="dv">3</span><span class="op">:</span><span class="dv">4</span>])<span class="op">%*%</span>coef_full[<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>]</code></pre></div>
+<pre><code>##          [,1]
+## [1,] 19.18963</code></pre>
+<p>and the log-likelihood ratio statistic is</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(<span class="kw">deviance</span>(clottingML_nested) <span class="op">-</span><span class="st"> </span><span class="kw">deviance</span>(clottingML))<span class="op">/</span>disp_hypothesis</code></pre></div>
+<pre><code>## dispersion 
+##    17.6435</code></pre>
+<p>which is close to the score statistic</p>
+</div>
+<div id="simulating-from-glm-objects-at-parameter-values" class="section level2">
+<h2>Simulating from <code>glm</code> objects at parameter values</h2>
+<p><strong>enrichwith</strong> also provides the <code>get_simulate_function</code> method for <code>glm</code> or <code>lm</code> objects. The <code>get_simulate_function</code> computes a function to simulate response vectors at /arbitrary/ values of the model parameters, which can be useful when setting up simulation experiments and for various inferential procedures (e.g. indirect inference).</p>
+<p>For example, the following code chunk simulates three response vectors at the maximum likelihood estimates of the parameters for <code>clottingML</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">simulate_clottingML &lt;-<span class="st"> </span><span class="kw">get_simulate_function</span>(clottingML)
+<span class="kw">simulate_clottingML</span>(<span class="dt">nsim =</span> <span class="dv">3</span>, <span class="dt">seed =</span> <span class="dv">123</span>)</code></pre></div>
+<pre><code>##        sim_1     sim_2     sim_3
+## 1  119.99301 117.71976 124.77001
+## 2   55.81195  53.03677  51.33030
+## 3   37.29072  37.29519  39.83985
+## 4   34.15268  32.39287  33.38394
+## 5   30.02089  26.76743  27.99428
+## 6   25.41892  24.63002  25.23102
+## 7   20.50630  21.33982  20.69055
+## 8   18.36304  19.61270  18.50062
+## 9   19.39328  19.08656  17.67781
+## 10  72.03656  72.99039  71.62121
+## 11  33.36883  33.57407  33.34055
+## 12  25.09187  24.91749  24.47527
+## 13  20.87817  21.60344  23.25175
+## 14  18.66966  16.86550  16.78601
+## 15  16.35583  15.69062  16.01810
+## 16  13.71021  13.65021  13.99123
+## 17  12.32866  13.18895  12.59467
+## 18  11.68437  11.25791  12.23057</code></pre>
+<p>The result is the same to what the <code>simulate</code> method returns</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">simulate</span>(clottingML, <span class="dt">nsim =</span> <span class="dv">3</span>, <span class="dt">seed =</span> <span class="dv">123</span>)</code></pre></div>
+<pre><code>##        sim_1     sim_2     sim_3
+## 1  119.99301 117.71976 124.77001
+## 2   55.81195  53.03677  51.33030
+## 3   37.29072  37.29519  39.83985
+## 4   34.15268  32.39287  33.38394
+## 5   30.02089  26.76743  27.99428
+## 6   25.41892  24.63002  25.23102
+## 7   20.50630  21.33982  20.69055
+## 8   18.36304  19.61270  18.50062
+## 9   19.39328  19.08656  17.67781
+## 10  72.03656  72.99039  71.62121
+## 11  33.36883  33.57407  33.34055
+## 12  25.09187  24.91749  24.47527
+## 13  20.87817  21.60344  23.25175
+## 14  18.66966  16.86550  16.78601
+## 15  16.35583  15.69062  16.01810
+## 16  13.71021  13.65021  13.99123
+## 17  12.32866  13.18895  12.59467
+## 18  11.68437  11.25791  12.23057</code></pre>
+<p>but <code>simulate_clottingML</code> can also be used to simulate at any given parameter value</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">coefficients &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.01</span>, <span class="dv">0</span>, <span class="fl">0.01</span>)
+dispersion &lt;-<span class="st"> </span><span class="fl">0.001</span>
+samples &lt;-<span class="st"> </span><span class="kw">simulate_clottingML</span>(<span class="dt">coefficients =</span> coefficients, <span class="dt">dispersion =</span> dispersion, <span class="dt">nsim =</span> <span class="dv">100000</span>, <span class="dt">seed =</span> <span class="dv">123</span>)</code></pre></div>
+<p>The empirical means and variances based on <code>samples</code> agree with the exact means and variances at <code>coefficients</code> and <code>dispersion</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">means &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">/</span>(<span class="kw">model.matrix</span>(clottingML) <span class="op">%*%</span><span class="st"> </span>coefficients)
+variances &lt;-<span class="st"> </span>dispersion <span class="op">*</span><span class="st"> </span>means<span class="op">^</span><span class="dv">2</span>
+<span class="kw">max</span>(<span class="kw">abs</span>(<span class="kw">rowMeans</span>(samples) <span class="op">-</span><span class="st"> </span>means))</code></pre></div>
+<pre><code>## [1] 0.007765443</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">max</span>(<span class="kw">abs</span>(<span class="kw">apply</span>(samples, <span class="dv">1</span>, var) <span class="op">-</span><span class="st"> </span>variances))</code></pre></div>
+<pre><code>## [1] 0.01553974</code></pre>
+</div>
+</div>
+<div id="power-calculation" class="section level1">
+<h1>Power calculation</h1>
+<p>The <code>simulate_clotting</code> function can be used here to estimate the <a href="https://en.wikipedia.org/wiki/Statistical_power">power</a> (or sensitivity) of the hypothesis test for including the interaction term in the gamma regression model with predictor <code>~ log(conc) * lot</code>.</p>
+<p>The function <code>pvalues</code> uses the various enrichment options for <code>glm</code> objects to compute p-values based on the score, likelihood ratio and Wald tests from simulated data sets on a range of values for the coefficient in the interaction term <code>log(conc):lot</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">compute_pvalues &lt;-<span class="st"> </span><span class="cf">function</span>(n, parameter, coefficients, dispersion, <span class="dt">nsimu =</span> <span class="dv">100</span>, <span class="dt">verbose =</span> <span class="ot">FALSE</span>) {
+    <span class="kw">require</span>(<span class="st">&quot;plyr&quot;</span>)
+    <span class="kw">require</span>(<span class="st">&quot;doMC&quot;</span>)
+    ## Concentration grid
+    conc &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">5</span>, <span class="dv">100</span>, <span class="dt">length.out =</span> n)
+    ## A data frame that sets the design. What the response is does
+    ## not matter here
+    clotting_temp &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">conc =</span> <span class="kw">rep</span>(conc, <span class="dv">2</span>),
+                                <span class="dt">lot =</span> <span class="kw">factor</span>(<span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">1</span>, n), <span class="kw">rep</span>(<span class="dv">2</span>, n))),
+                                <span class="dt">time =</span> <span class="kw">rgamma</span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span>n, <span class="dv">2</span>, <span class="dv">2</span>))
+    ## Fit a dummy GLM and then get a simulate method out of it
+    clotting_temp_ML&lt;-<span class="st"> </span><span class="kw">glm</span>(time <span class="op">~</span><span class="st"> </span><span class="kw">log</span>(conc) <span class="op">*</span><span class="st"> </span>lot, <span class="dt">family =</span> Gamma, <span class="dt">data =</span> clotting_temp)
+    simulate_clotting &lt;-<span class="st"> </span><span class="kw">get_simulate_function</span>(clotting_temp_ML)
+    pvalues_out &lt;-<span class="st"> </span><span class="ot">NULL</span>
+    <span class="cf">for</span> (which <span class="cf">in</span> <span class="kw">seq.int</span>(<span class="kw">length</span>(parameter))) {
+        <span class="cf">if</span> (verbose) {
+            <span class="kw">cat</span>(<span class="st">&quot;setting&quot;</span>, which, <span class="st">&quot;out of&quot;</span>, <span class="kw">length</span>(parameter), <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+        }
+        parameter_setting &lt;-<span class="st"> </span>coefficients
+        parameter_setting[<span class="dv">4</span>] &lt;-<span class="st"> </span>parameter[which]
+        simu_samples &lt;-<span class="st"> </span><span class="kw">simulate_clotting</span>(parameter_setting,
+                                          <span class="dt">dispersion =</span> dispersion,
+                                          <span class="dt">nsim =</span> nsimu,
+                                          <span class="dt">seed =</span> <span class="dv">123</span>)
+        results &lt;-<span class="st"> </span><span class="kw">adply</span>(simu_samples, <span class="dv">2</span>, <span class="cf">function</span>(response) {
+        clotting_temp<span class="op">$</span>response &lt;-<span class="st"> </span><span class="kw">unlist</span>(response)
+        ## Fit the full model for the current response vector and enrich it
+        cfit &lt;-<span class="st">  </span><span class="kw">enrich</span>(<span class="kw">update</span>(clotting_temp_ML, response <span class="op">~</span><span class="st"> </span>.), <span class="dt">with =</span> <span class="st">&quot;auxiliary functions&quot;</span>)
+        ## Fit the nested model
+        cfit_nested &lt;-<span class="st"> </span><span class="kw">update</span>(cfit, . <span class="op">~</span><span class="st"> </span><span class="kw">log</span>(conc) <span class="op">+</span><span class="st"> </span>lot)
+        enriched_cfit_nested &lt;-<span class="st"> </span><span class="kw">enrich</span>(cfit_nested, <span class="dt">with =</span> <span class="st">&quot;mle of dispersion&quot;</span>)
+        coef_full &lt;-<span class="st"> </span><span class="kw">coef</span>(cfit)
+        ## Prepare the vectors of the constrained estimates
+        coef_hypothesis &lt;-<span class="st"> </span><span class="kw">structure</span>(<span class="kw">rep</span>(<span class="dv">0</span>, <span class="kw">length</span>(coef_full)), <span class="dt">names =</span> <span class="kw">names</span>(coef_full))
+        coef_hypothesis_short &lt;-<span class="st"> </span><span class="kw">coef</span>(enriched_cfit_nested, <span class="dt">model =</span> <span class="st">&quot;mean&quot;</span>)
+        coef_hypothesis[<span class="kw">names</span>(coef_hypothesis_short)] &lt;-<span class="st"> </span>coef_hypothesis_short
+        disp_hypothesis &lt;-<span class="st"> </span><span class="kw">coef</span>(enriched_cfit_nested, <span class="dt">model =</span> <span class="st">&quot;dispersion&quot;</span>)
+        ## Compute score and information of the full mode at the constrained estimates
+        scores &lt;-<span class="st"> </span><span class="kw">get_score_function</span>(cfit)(coef_hypothesis, disp_hypothesis)
+        info &lt;-<span class="st"> </span><span class="kw">get_information_function</span>(cfit)(coef_hypothesis, disp_hypothesis)
+        ## Compute statistics
+        score_statistic &lt;-<span class="st"> </span><span class="kw">drop</span>(scores<span class="op">%*%</span><span class="kw">solve</span>(info)<span class="op">%*%</span>scores)
+        lr_statistic &lt;-<span class="st"> </span>(<span class="kw">deviance</span>(cfit_nested) <span class="op">-</span><span class="st"> </span><span class="kw">deviance</span>(cfit))<span class="op">/</span>disp_hypothesis
+        wald_statistic &lt;-<span class="st"> </span>coef_full[<span class="dv">4</span>]<span class="op">%*%</span><span class="kw">solve</span>(<span class="kw">solve</span>(info)[<span class="dv">4</span>, <span class="dv">4</span>])<span class="op">%*%</span>coef_full[<span class="dv">4</span>]
+        ## power
+        <span class="kw">data.frame</span>(<span class="dt">pvalues =</span> <span class="kw">c</span>(<span class="kw">pchisq</span>(score_statistic, <span class="dv">1</span>, <span class="dt">lower.tail =</span> <span class="ot">FALSE</span>),
+                               <span class="kw">pchisq</span>(lr_statistic, <span class="dv">1</span>, <span class="dt">lower.tail =</span> <span class="ot">FALSE</span>),
+                               <span class="kw">pchisq</span>(wald_statistic, <span class="dv">1</span>, <span class="dt">lower.tail =</span> <span class="ot">FALSE</span>)),
+                   <span class="dt">statistics =</span> <span class="kw">c</span>(score_statistic, lr_statistic, wald_statistic),
+                   <span class="dt">method =</span> <span class="kw">factor</span>(<span class="kw">c</span>(<span class="st">&quot;score&quot;</span>, <span class="st">&quot;lr&quot;</span>, <span class="st">&quot;wald&quot;</span>)))
+        }, <span class="dt">.parallel =</span> <span class="ot">TRUE</span>)
+        pvalues_out &lt;-<span class="st"> </span><span class="kw">rbind</span>(pvalues_out, <span class="kw">data.frame</span>(results, <span class="dt">parameter =</span> parameter[which], <span class="dt">sample_size =</span> n))
+    }
+    pvalues_out
+}</code></pre></div>
+<p>The following code chunk estimates the power of the test for a range of resolutions, when the parameters for the main effects and the dispersion parameter are fixed to their values in the maximum likelihood fit in <code>enriched_clottingML</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;dplyr&quot;</span>)
+<span class="kw">registerDoMC</span>(<span class="dv">2</span>)
+
+nsimu &lt;-<span class="st"> </span><span class="dv">500</span>
+coefficients &lt;-<span class="st"> </span><span class="kw">coef</span>(enriched_clottingML, <span class="st">&quot;mean&quot;</span>)
+dispersion &lt;-<span class="st"> </span><span class="kw">coef</span>(enriched_clottingML, <span class="st">&quot;dispersion&quot;</span>)
+parameters &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="fl">0.002</span>, <span class="dt">length =</span> <span class="dv">20</span>)
+
+## Compute pvalues for each resolution of percentage concentration
+pvalues &lt;-<span class="st"> </span><span class="ot">NULL</span>
+<span class="cf">for</span> (n <span class="cf">in</span> <span class="kw">c</span>(<span class="dv">9</span>, <span class="dv">18</span>, <span class="dv">36</span>, <span class="dv">72</span>)) {
+    <span class="kw">set.seed</span>(<span class="dv">123</span>)
+    pvalues &lt;-<span class="st"> </span><span class="kw">rbind</span>(pvalues, <span class="kw">compute_pvalues</span>(n, parameters, coefficients, dispersion, nsimu))
+}
+
+## Compute power for each combination of parameter, method and sample size
+power_values_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">data.frame</span>(pvalues <span class="op">%&gt;%</span>
+<span class="st">                             </span><span class="kw">group_by</span>(parameter, method, sample_size) <span class="op">%&gt;%</span>
+<span class="st">                             </span><span class="kw">summarize</span>(<span class="dt">power =</span> <span class="kw">mean</span>(pvalues <span class="op">&lt;</span><span class="st"> </span><span class="fl">0.01</span>)),
+                             <span class="dt">alpha =</span> <span class="fl">0.01</span>)
+power_values_<span class="dv">5</span> &lt;-<span class="st"> </span><span class="kw">data.frame</span>(pvalues <span class="op">%&gt;%</span>
+<span class="st">                             </span><span class="kw">group_by</span>(parameter, method, sample_size) <span class="op">%&gt;%</span>
+<span class="st">                             </span><span class="kw">summarize</span>(<span class="dt">power =</span> <span class="kw">mean</span>(pvalues <span class="op">&lt;</span><span class="st"> </span><span class="fl">0.05</span>)),
+                             <span class="dt">alpha =</span> <span class="fl">0.05</span>)
+power_values &lt;-<span class="st"> </span><span class="kw">rbind</span>(power_values_<span class="dv">1</span>, power_values_<span class="dv">5</span>)
+
+## Plot the power curves
+<span class="kw">ggplot</span>(power_values) <span class="op">+</span><span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">x =</span> parameter, <span class="dt">y =</span> power, <span class="dt">col =</span> sample_size, <span class="dt">group =</span> sample_size)) <span class="op">+</span><span class="st"> </span><span class="kw">facet_grid</span>(method <span class="op">~</span><span class="st"> </span>alpha)</code></pre></div>
+</div>
+<div id="links-to-other-resources" class="section level1">
+<h1>Links to other resources</h1>
+<p>The vignette <a href="https://CRAN.R-project.org/package=enrichwith/vignettes/bias.html">bias</a> of <strong>enrichwith</strong> describes how to use the <code>auxiliary_functions</code> to reduce the bias of the maximum likelihood estimator for generalized linear models.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-mccullagh:89">
+<p>McCullagh, P., and J. A. Nelder. 1989. <em>Generalized Linear Models</em>. 2nd ed. London: Chapman; Hall.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
