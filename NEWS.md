@@ -1,4 +1,21 @@
-# enrichwith 0.3
+# enrichwith 0.04
+
+## Bug fixes
+* p,q,d model: if data is missing then the model frame is used
+* Fixed error message in qmodel
+
+## New functionality
+* Added `get_dmodel_function`, `get_pmodel_function`, `get_qmodel_function`
+* `enriched_glm` can now be used to fit GLMs and get objects that are
+  enriched with auxiliary functions and other components when compared
+  to their `glm` counterparts
+
+## Other improvements, updates and additions
+* Fixed typos in `?enrich.family`
+* Added documentation for `get_dmodel_function.glm`,
+  `get_pmodel_function.glm`, `get_qmodel_function.glm`
+
+# enrichwith 0.03
 
 ## Bug fixes
 * Took care of aliasing in bias calculations
@@ -18,7 +35,7 @@
 * New vignette for enriching `glm` objects
 * Updated README file
 
-# enrichwith 0.2
+# enrichwith 0.02
 
 * Fixed an issue with the example in ?enrich.glm
 * Minor codebase improvements
@@ -26,7 +43,7 @@
 * More detailed descriptions for the enrichment options for `glm` objects
 * Included a vignette on how bias-reduction for GLMs can be implemented using enriched `glm` objects
 
-# enrichwith 0.1
+# enrichwith 0.01
 
 * First release
 
