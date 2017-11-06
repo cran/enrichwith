@@ -30,6 +30,8 @@ The \code{enrich.link-glm} method supports \code{logit},
 the \code{\link{power}} family of links.
 }
 \examples{
+
+# Example
 elogit <- enrich(make.link("logit"), with = "inverse link derivatives")
 str(elogit)
 elogit$d2mu.deta

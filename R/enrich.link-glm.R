@@ -20,6 +20,8 @@
 #'     returns the components and their descriptions.
 #'
 #' @examples
+#'
+#' # Example
 #' elogit <- enrich(make.link("logit"), with = "inverse link derivatives")
 #' str(elogit)
 #' elogit$d2mu.deta
