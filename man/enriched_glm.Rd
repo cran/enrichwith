@@ -2,17 +2,24 @@
 % Please edit documentation in R/enriched_glm.R
 \name{enriched_glm}
 \alias{enriched_glm}
-\title{Fitting generalized linear models and enriching the result}
+\title{Fitting generalized linear models enriched with useful components}
 \usage{
-enriched_glm(...)
+enriched_glm(formula, family = gaussian, ...)
 }
 \arguments{
-\item{...}{
-    For \code{glm}: arguments to be used to form the default
-    \code{control} argument if it is not supplied directly.
+\item{formula}{an object of class \code{"\link{formula}"} (or one that
+    can be coerced to that class): a symbolic description of the
+    model to be fitted.  The details of model specification are given
+    under \sQuote{Details}.}
 
-    For \code{weights}: further arguments passed to or from other methods.
-  }
+\item{family}{a description of the error distribution and link
+    function to be used in the model.  For \code{glm} this can be a
+    character string naming a family function, a family function or the
+    result of a call to a family function.  For \code{glm.fit} only the
+    third option is supported.  (See \code{\link{family}} for details of
+    family functions.)}
+
+\item{...}{other arguments passed to \code{\link{glm}}}
 }
 \value{
 An object of class \code{enriched_glm} that contains all the

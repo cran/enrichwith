@@ -22,7 +22,7 @@
 <style type="text/css">
 a.sourceLine { display: inline-block; line-height: 1.25; }
 a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; position: absolute; }
+a.sourceLine:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
@@ -35,13 +35,11 @@ code.sourceCode { white-space: pre-wrap; }
 a.sourceLine { text-indent: -1em; padding-left: 1em; }
 }
 pre.numberSource a.sourceLine
-  { position: relative; }
-pre.numberSource a.sourceLine:empty
-  { position: absolute; }
+  { position: relative; left: -4em; }
 pre.numberSource a.sourceLine::before
   { content: attr(data-line-number);
-    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all;
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -279,7 +277,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 
 <h1 class="title toc-ignore">Bias reduction in generalized linear models using <strong>enrichwith</strong></h1>
-<h4 class="author"><em><a href="http://www.ucl.ac.uk/~ucakiko/">Ioannis Kosmidis</a></em></h4>
+<h4 class="author"><em><a href="http://www.ikosmidis.com">Ioannis Kosmidis</a></em></h4>
 <h4 class="date"><em>2016-09-02</em></h4>
 
 
@@ -456,31 +454,31 @@ b(\theta^{(k)})\]</span> where <span class="math inline">\(\theta^{(k)}\)</span>
 <p>Agresti, A. 2015. <em>Foundations of Linear and Generalized Linear Models</em>. Wiley Series in Probability and Statistics. Wiley.</p>
 </div>
 <div id="ref-cordeiro:91">
-<p>Cordeiro, G. M., and P. McCullagh. 1991. “Bias Correction in Generalized Linear Models.” <em>Rssb</em> 53 (3):629–43.</p>
+<p>Cordeiro, G. M., and P. McCullagh. 1991. “Bias Correction in Generalized Linear Models.” <em>Rssb</em> 53 (3): 629–43.</p>
 </div>
 <div id="ref-cox:68">
-<p>Cox, D. R., and E. J. Snell. 1968. “A General Definition of Residuals (with Discussion).” <em>Journal of the Royal Statistical Society, Series B: Methodological</em> 30:248–75.</p>
+<p>Cox, D. R., and E. J. Snell. 1968. “A General Definition of Residuals (with Discussion).” <em>Journal of the Royal Statistical Society, Series B: Methodological</em> 30: 248–75.</p>
 </div>
 <div id="ref-firth:93">
-<p>Firth, D. 1993. “Bias Reduction of Maximum Likelihood Estimates.” <em>Biometrika</em> 80 (1):27–38.</p>
+<p>Firth, D. 1993. “Bias Reduction of Maximum Likelihood Estimates.” <em>Biometrika</em> 80 (1): 27–38.</p>
 </div>
 <div id="ref-heinze:02">
-<p>Heinze, G., and M. Schemper. 2002. “A Solution to the Problem of Separation in Logistic Regression.” <em>Statistics in Medicine</em> 21:2409–19.</p>
+<p>Heinze, G., and M. Schemper. 2002. “A Solution to the Problem of Separation in Logistic Regression.” <em>Statistics in Medicine</em> 21: 2409–19.</p>
 </div>
 <div id="ref-kosmidis:07">
-<p>Kosmidis, I. 2007. “Bias Reduction in Exponential Family Nonlinear Models.” PhD thesis, Department of Statistics, University of Warwick. <a href="http://www.ucl.ac.uk/~ucakiko/files/ikosmidis_thesis.pdf" class="uri">http://www.ucl.ac.uk/~ucakiko/files/ikosmidis_thesis.pdf</a>.</p>
+<p>Kosmidis, I. 2007. “Bias Reduction in Exponential Family Nonlinear Models.” PhD thesis, Department of Statistics, University of Warwick. <a href="http://www.ikosmidis.com/files/ikosmidis_thesis.pdf" class="uri">http://www.ikosmidis.com/files/ikosmidis_thesis.pdf</a>.</p>
 </div>
 <div id="ref-kosmidis:14a">
-<p>———. 2014. “Improved Estimation in Cumulative Link Models.” <em>Journal of the Royal Statistical Society, Series B: Methodological</em> 76 (1):169–96. <a href="https://doi.org/10.1111/rssb.12025" class="uri">https://doi.org/10.1111/rssb.12025</a>.</p>
+<p>———. 2014. “Improved Estimation in Cumulative Link Models.” <em>Journal of the Royal Statistical Society, Series B: Methodological</em> 76 (1): 169–96. <a href="https://doi.org/10.1111/rssb.12025" class="uri">https://doi.org/10.1111/rssb.12025</a>.</p>
 </div>
 <div id="ref-kosmidis:09">
-<p>Kosmidis, I., and D. Firth. 2009. “Bias Reduction in Exponential Family Nonlinear Models.” <em>Biometrika</em> 96 (4):793–804. <a href="https://doi.org/10.1093/biomet/asp055" class="uri">https://doi.org/10.1093/biomet/asp055</a>.</p>
+<p>Kosmidis, I., and D. Firth. 2009. “Bias Reduction in Exponential Family Nonlinear Models.” <em>Biometrika</em> 96 (4): 793–804. <a href="https://doi.org/10.1093/biomet/asp055" class="uri">https://doi.org/10.1093/biomet/asp055</a>.</p>
 </div>
 <div id="ref-kosmidis:10">
-<p>———. 2010. “A Generic Algorithm for Reducing Bias in Parametric Estimation.” <em>Electronic Journal of Statistics</em> 4:1097–1112. <a href="https://doi.org/10.1214/10-EJS579" class="uri">https://doi.org/10.1214/10-EJS579</a>.</p>
+<p>———. 2010. “A Generic Algorithm for Reducing Bias in Parametric Estimation.” <em>Electronic Journal of Statistics</em> 4: 1097–1112. <a href="https://doi.org/10.1214/10-EJS579" class="uri">https://doi.org/10.1214/10-EJS579</a>.</p>
 </div>
 <div id="ref-kosmidis:11">
-<p>———. 2011. “Multinomial Logit Bias Reduction via the Poisson Log-Linear Model.” <em>Biometrika</em> 98 (3):755–59.</p>
+<p>———. 2011. “Multinomial Logit Bias Reduction via the Poisson Log-Linear Model.” <em>Biometrika</em> 98 (3): 755–59.</p>
 </div>
 </div>
 </div>

@@ -1,10 +1,11 @@
-#' Fitting generalized linear models and enriching the result
+#' Fitting generalized linear models enriched with useful components
 #'
 #' \code{\link{enriched_glm}} fits generalized linear models using
 #' \code{\link{glm}} and then enriches the resulting object with all
 #' enrichment options.
 #'
 #' @inheritParams stats::glm
+#' @param ... other arguments passed to \code{\link{glm}}
 #'
 #' @details
 #'
@@ -76,7 +77,16 @@
 #'
 #'
 #' @export
-enriched_glm <- function(...) {
-    fit <- glm(...)
+enriched_glm <- function(formula, family = gaussian, ...) {
+    fit <- glm(formula = formula, family = gaussian, ...)
     enrich(fit, with = "all")
+}
+
+
+
+aa <- function(x, y) {
+    bb <- function(y) {
+        if (missing(y)) 2 else y + 2
+    }
+    x + bb(y)
 }

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Ioannis Kosmidis" />
 
-<meta name="date" content="2018-05-04" />
+<meta name="date" content="2019-01-11" />
 
 <title>Enriching family objects: exponential family of distirbutions</title>
 
@@ -22,7 +22,7 @@
 <style type="text/css">
 a.sourceLine { display: inline-block; line-height: 1.25; }
 a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; position: absolute; }
+a.sourceLine:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
@@ -35,13 +35,11 @@ code.sourceCode { white-space: pre-wrap; }
 a.sourceLine { text-indent: -1em; padding-left: 1em; }
 }
 pre.numberSource a.sourceLine
-  { position: relative; }
-pre.numberSource a.sourceLine:empty
-  { position: absolute; }
+  { position: relative; left: -4em; }
 pre.numberSource a.sourceLine::before
   { content: attr(data-line-number);
-    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all;
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -279,8 +277,8 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 
 <h1 class="title toc-ignore">Enriching <code>family</code> objects: exponential family of distirbutions</h1>
-<h4 class="author"><em><a href="http://www.ucl.ac.uk/~ucakiko/">Ioannis Kosmidis</a></em></h4>
-<h4 class="date"><em>2018-05-04</em></h4>
+<h4 class="author"><em><a href="http://www.ikosmidis.com">Ioannis Kosmidis</a></em></h4>
+<h4 class="date"><em>2019-01-11</em></h4>
 
 
 
@@ -324,45 +322,46 @@ f_{Y}(y) = \exp\left\{\frac{y \theta - b(\theta) - c_1(y)}{\phi/m} - \frac{1}{2}
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">inverse.gaussian</span>()<span class="op">$</span>dev.resids</a></code></pre></div>
 <pre><code>## function (y, mu, wt) 
 ## wt * ((y - mu)^2)/(y * mu^2)
-## &lt;bytecode: 0x7fc91cedebb8&gt;
-## &lt;environment: 0x7fc91cee08a8&gt;</code></pre>
+## &lt;bytecode: 0x7fe62a48d3f8&gt;
+## &lt;environment: 0x7fe62a47f820&gt;</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">inverse.gaussian</span>()<span class="op">$</span>variance</a></code></pre></div>
 <pre><code>## function (mu) 
 ## mu^3
-## &lt;bytecode: 0x7fc91ceded78&gt;
-## &lt;environment: 0x7fc91cf59638&gt;</code></pre>
+## &lt;bytecode: 0x7fe62a48d238&gt;
+## &lt;environment: 0x7fe62745f7a8&gt;</code></pre>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">inverse.gaussian</span>()<span class="op">$</span>aic</a></code></pre></div>
 <pre><code>## function (y, n, mu, wt, dev) 
 ## sum(wt) * (log(dev/sum(wt) * 2 * pi) + 1) + 3 * sum(log(y) * 
 ##     wt) + 2
-## &lt;bytecode: 0x7fc91cede4f0&gt;
-## &lt;environment: 0x7fc91cfd4c78&gt;</code></pre>
+## &lt;bytecode: 0x7fe62a48dac0&gt;
+## &lt;environment: 0x7fe6382b5ce8&gt;</code></pre>
 </div>
 <div id="enrichment-options-for-family-objects" class="section level1">
 <h1>Enrichment options for <code>family</code> objects</h1>
 <p>The <strong>enrichwith</strong> R package provides methods for the enrichment of <code>family</code> objects with a function that links the natural parameter <span class="math inline">\(\theta\)</span> with <span class="math inline">\(\mu\)</span>, the function <span class="math inline">\(b(\theta)\)</span>, the first two derivatives of <span class="math inline">\(V(\mu)\)</span>, <span class="math inline">\(a(\zeta)\)</span> and its first four derivatives, and <span class="math inline">\(c_1(y)\)</span> and <span class="math inline">\(c_2(y)\)</span>. To illustrate, let’s write a function that reconstructs the densitities and probability mass functions from the components that result from enrichment</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">dens &lt;-<span class="st"> </span><span class="cf">function</span>(y, <span class="dt">m =</span> <span class="dv">1</span>, mu, phi, family) {</a>
-<a class="sourceLine" id="cb7-2" data-line-number="2">    object &lt;-<span class="st"> </span><span class="kw">enrich</span>(family)</a>
-<a class="sourceLine" id="cb7-3" data-line-number="3">    <span class="kw">with</span>(object, {</a>
-<a class="sourceLine" id="cb7-4" data-line-number="4">        c2 &lt;-<span class="st"> </span><span class="cf">if</span> (family <span class="op">==</span><span class="st"> &quot;binomial&quot;</span>) <span class="kw">c2fun</span>(y, m) <span class="cf">else</span> <span class="kw">c2fun</span>(y)</a>
-<a class="sourceLine" id="cb7-5" data-line-number="5">        <span class="kw">exp</span>(m <span class="op">*</span><span class="st"> </span>(y <span class="op">*</span><span class="st"> </span><span class="kw">theta</span>(mu) <span class="op">-</span><span class="st"> </span><span class="kw">bfun</span>(<span class="kw">theta</span>(mu)) <span class="op">-</span><span class="st"> </span><span class="kw">c1fun</span>(y))<span class="op">/</span>phi <span class="op">-</span></a>
-<a class="sourceLine" id="cb7-6" data-line-number="6"><span class="st">            </span><span class="fl">0.5</span> <span class="op">*</span><span class="st"> </span><span class="kw">afun</span>(<span class="op">-</span>m<span class="op">/</span>phi) <span class="op">+</span><span class="st"> </span>c2)</a>
-<a class="sourceLine" id="cb7-7" data-line-number="7">    })</a>
-<a class="sourceLine" id="cb7-8" data-line-number="8">}</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw">library</span>(<span class="st">&quot;enrichwith&quot;</span>)</a>
+<a class="sourceLine" id="cb7-2" data-line-number="2">dens &lt;-<span class="st"> </span><span class="cf">function</span>(y, <span class="dt">m =</span> <span class="dv">1</span>, mu, phi, family) {</a>
+<a class="sourceLine" id="cb7-3" data-line-number="3">    object &lt;-<span class="st"> </span><span class="kw">enrich</span>(family)</a>
+<a class="sourceLine" id="cb7-4" data-line-number="4">    <span class="kw">with</span>(object, {</a>
+<a class="sourceLine" id="cb7-5" data-line-number="5">        c2 &lt;-<span class="st"> </span><span class="cf">if</span> (family <span class="op">==</span><span class="st"> &quot;binomial&quot;</span>) <span class="kw">c2fun</span>(y, m) <span class="cf">else</span> <span class="kw">c2fun</span>(y)</a>
+<a class="sourceLine" id="cb7-6" data-line-number="6">        <span class="kw">exp</span>(m <span class="op">*</span><span class="st"> </span>(y <span class="op">*</span><span class="st"> </span><span class="kw">theta</span>(mu) <span class="op">-</span><span class="st"> </span><span class="kw">bfun</span>(<span class="kw">theta</span>(mu)) <span class="op">-</span><span class="st"> </span><span class="kw">c1fun</span>(y))<span class="op">/</span>phi <span class="op">-</span></a>
+<a class="sourceLine" id="cb7-7" data-line-number="7"><span class="st">            </span><span class="fl">0.5</span> <span class="op">*</span><span class="st"> </span><span class="kw">afun</span>(<span class="op">-</span>m<span class="op">/</span>phi) <span class="op">+</span><span class="st"> </span>c2)</a>
+<a class="sourceLine" id="cb7-8" data-line-number="8">    })</a>
+<a class="sourceLine" id="cb7-9" data-line-number="9">}</a></code></pre></div>
 <p>The following chunks test <code>dens</code> for a few distributions against the standard <code>d*</code> functions</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1">## Normal</a>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="co">## Normal</span></a>
 <a class="sourceLine" id="cb8-2" data-line-number="2"><span class="kw">all.equal</span>(<span class="kw">dens</span>(<span class="dt">y =</span> <span class="fl">0.2</span>, <span class="dt">m =</span> <span class="dv">3</span>, <span class="dt">mu =</span> <span class="dv">1</span>, <span class="dt">phi =</span> <span class="fl">3.22</span>, <span class="kw">gaussian</span>()),</a>
 <a class="sourceLine" id="cb8-3" data-line-number="3">          <span class="kw">dnorm</span>(<span class="dt">x =</span> <span class="fl">0.2</span>, <span class="dt">mean =</span> <span class="dv">1</span>, <span class="dt">sd =</span> <span class="kw">sqrt</span>(<span class="fl">3.22</span><span class="op">/</span><span class="dv">3</span>)))</a></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1">## Gamma</a>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="co">## Gamma</span></a>
 <a class="sourceLine" id="cb10-2" data-line-number="2"><span class="kw">all.equal</span>(<span class="kw">dens</span>(<span class="dt">y =</span> <span class="dv">3</span>, <span class="dt">m =</span> <span class="fl">1.44</span>, <span class="dt">mu =</span> <span class="fl">2.3</span>, <span class="dt">phi =</span> <span class="fl">1.3</span>, <span class="kw">Gamma</span>()),</a>
 <a class="sourceLine" id="cb10-3" data-line-number="3">          <span class="kw">dgamma</span>(<span class="dt">x =</span> <span class="dv">3</span>, <span class="dt">shape =</span> <span class="fl">1.44</span><span class="op">/</span><span class="fl">1.3</span>, <span class="fl">1.44</span><span class="op">/</span>(<span class="fl">1.3</span> <span class="op">*</span><span class="st"> </span><span class="fl">2.3</span>)))</a></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">## Inverse gaussian</a>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="co">## Inverse gaussian</span></a>
 <a class="sourceLine" id="cb12-2" data-line-number="2"><span class="kw">all.equal</span>(<span class="kw">dens</span>(<span class="dt">y =</span> <span class="fl">0.2</span>, <span class="dt">m =</span> <span class="fl">7.23</span>, <span class="dt">mu =</span> <span class="dv">1</span>, <span class="dt">phi =</span> <span class="fl">3.22</span>, <span class="kw">inverse.gaussian</span>()),</a>
 <a class="sourceLine" id="cb12-3" data-line-number="3">          SuppDists<span class="op">::</span><span class="kw">dinvGauss</span>(<span class="fl">0.2</span>, <span class="dt">nu =</span> <span class="dv">1</span>, <span class="dt">lambda =</span> <span class="fl">7.23</span><span class="op">/</span><span class="fl">3.22</span>))</a></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">## Binomial</a>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="co">## Binomial</span></a>
 <a class="sourceLine" id="cb14-2" data-line-number="2"><span class="kw">all.equal</span>(<span class="kw">dens</span>(<span class="dt">y =</span> <span class="fl">0.34</span>, <span class="dt">m =</span> <span class="dv">100</span>, <span class="dt">mu =</span> <span class="fl">0.32</span>, <span class="dt">phi =</span> <span class="dv">1</span>, <span class="kw">binomial</span>()),</a>
 <a class="sourceLine" id="cb14-3" data-line-number="3">          <span class="kw">dbinom</span>(<span class="dt">x =</span> <span class="dv">34</span>, <span class="dt">size =</span> <span class="dv">100</span>, <span class="dt">prob =</span> <span class="fl">0.32</span>))</a></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>

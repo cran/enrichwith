@@ -154,7 +154,8 @@
     phi_mu.eta <- linkprec$mu.eta
     phi_dmu.deta <- linkprec$dmu.deta
     ystar <- qlogis(y)
-    score <- function(coefficients, contributions = TRUE) {
+    u <- log(1 - y)
+    score <- function(coefficients, contributions = FALSE) {
         if (missing(coefficients)) {
             coefficients <- coef(object, model = "full")
         }
@@ -167,20 +168,22 @@
         mustar <- digamma(mu * phi) - digamma((1 - mu) * phi)
         psi1 <- trigamma(mu * phi)
         psi2 <- trigamma((1 - mu) * phi)
-        rval <- cbind(phi * (ystar - mustar) * mu.eta(eta) *
-            weights * x, (mu * (ystar - mustar) + log(1 - y) -
-            digamma((1 - mu) * phi) + digamma(phi)) * phi_mu.eta(phi_eta) *
-            weights * z)
+        tbar_ubar <- ystar - mustar
+        ubar <- u - digamma((1 - mu) * phi) + digamma(phi)
+        rval <- cbind(phi * tbar_ubar * mu.eta(eta) * weights * x,
+        (mu * tbar_ubar + ubar) * phi_mu.eta(phi_eta) * weights * z)
         if (contributions)
+            rval
+        else
             colSums(rval)
-        else rval
     }
 
-    information <- function(coefficients, QR = FALSE) {
+    information <- function(coefficients, QR = TRUE, CHOL = FALSE,
+                            type = c("expected", "observed")) {
         if (missing(coefficients)) {
-
             coefficients <- coef(object, model = "full")
         }
+        type <- match.arg(type)
         beta <- coefficients[seq.int(length.out = k)]
         gamma <- coefficients[seq.int(length.out = m) + k]
         eta <- as.vector(x %*% beta + offset[[1L]])
@@ -192,9 +195,11 @@
         psi2 <- trigamma((1 - mu) * phi)
         a <- psi1 + psi2
         b <- psi1 * mu^2 + psi2 * (1 - mu)^2 - trigamma(phi)
-        wbb <- phi^2 * a * mu.eta(eta)^2
-        wpp <- b * phi_mu.eta(phi_eta)^2
-        wbp <- phi * (mu * a - psi2) * mu.eta(eta) * phi_mu.eta(phi_eta)
+        D1 <- mu.eta(eta)
+        D2 <- phi_mu.eta(phi_eta)
+        wbb <- phi^2 * a * D1^2
+        wpp <- b * D2^2
+        wbp <- phi * (mu * a - psi2) * D1 * D2
         kbb <- if (k > 0L)
             crossprod(sqrt(weights) * sqrt(wbb) * x)
         else crossprod(x)
@@ -204,7 +209,29 @@
         kbp <- if (k > 0L & m > 0L)
             crossprod(weights * wbp * x, z)
         else crossprod(x, z)
-        cbind(rbind(kbb, t(kbp)), rbind(kbp, kpp))
+        out <- cbind(rbind(kbb, t(kbp)), rbind(kbp, kpp))
+        if (type == "observed") {
+            tbar_ubar <- ystar - mustar
+            ubar <- u - digamma((1 - mu) * phi) + digamma(phi)
+            D1dash <- dmu.deta(eta)
+            D2dash <- phi_dmu.deta(phi_eta)
+            kbb <- if (k > 0L)
+                       crossprod(phi * D1dash * tbar_ubar * x, x)
+                   else crossprod(x)
+            kpp <- if (m > 0L)
+                       crossprod(D2dash * (mu * tbar_ubar + ubar) * z, z)
+                   else crossprod(z)
+            kbp <- if (k > 0L & m > 0L)
+                       crossprod(D1 * D2 * tbar_ubar * x, z)
+                   else crossprod(x, z)
+            out <- out - cbind(rbind(kbb, t(kbp)), rbind(kbp, kpp))
+        }
+        colnames(out) <- names(coef(object))
+        if (CHOL)
+            out <- chol(out)
+        attr(out, "coefficients") <- coefficients
+        out
+
     }
 
     bias <- function(coefficients) {
@@ -284,7 +311,12 @@
 
     simulate <- function(coefficients, nsim = 1, seed = NULL) {
         if (missing(coefficients)) {
-            coefficients <-  coefficients <- coef(object, model = "full")
+            coefficients <-  coef(object, model = "full")
+        }
+        else {
+            if (!isTRUE(identical(length(coefficients), length(coef(object, model = "full"))))) {
+                stop("`coefficients` does not have the right length")
+            }
         }
         if (!exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
             runif(1)
@@ -444,7 +476,12 @@ get_score_function.betareg <- function(object, ...) {
 #' information matrix is evaluated. If missing then the maximum
 #' likelihood estimates are used}
 #'
-#' \item{QR}{If \code{TRUE}, then the QR decomposition of the expected information for the coefficients is returned}
+#'
+#' \item{type}{should the function return th 'expected' or 'observed' information? Default is \code{expected}}
+#'
+#' \item{QR}{Currently not used}
+#'
+#' \item{CHOL}{If \code{TRUE}, then the Cholesky decomposition of the information matrix at the coefficients is returned}
 #'
 #' }
 #'

@@ -4,6 +4,7 @@ inverse.gaussian()$variance
 inverse.gaussian()$aic
 
 ## ---- echo = TRUE, eval = TRUE-------------------------------------------
+library("enrichwith")
 dens <- function(y, m = 1, mu, phi, family) {
     object <- enrich(family)
     with(object, {
