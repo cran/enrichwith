@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
@@ -21,19 +20,18 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -53,7 +51,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -351,7 +349,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## Number of Fisher Scoring iterations: 17</code></pre>
 <p>As is the case for the logistic regression in <span class="citation">Heinze and Schemper (2002)</span>, the maximum likelihood (ML) estimate of the parameter for <code>NV</code> is actually infinite. The reported, apparently finite value is merely due to false convergence of the iterative estimation procedure. The same is true for the estimated standard error, and, hence the value <code>r round(coef(summary(modML))[&quot;NV&quot;, &quot;z value&quot;], 3)</code> for the <span class="math inline">\(z\)</span>-statistic cannot be trusted for inference on the size of the effect for <code>NV</code>.</p>
 <p>In categorical-response models like the above, the bias reduction method in <span class="citation">Firth (1993)</span> has been found to result in finite estimates even when the ML ones are infinite <span class="citation">(see, Heinze and Schemper 2002, for logistic regressions; Kosmidis and Firth 2011, for multinomial regressions; Kosmidis 2014, for cumulative link models)</span>.</p>
-<p>One of the variants of that bias reduction method is implemented in the <a href="https://CRAN.R-project.org/package=brglm"><strong>brglm</strong></a> R package, which estimates binomial-reponse GLMs using iterative ML fits on binomial pseudo-data <span class="citation">(see, Kosmidis 2007, Chapter 5, for details)</span>. The reduced-bias estimates for the probit regression on the endometrial data can be computed as follows.</p>
+<p>One of the variants of that bias reduction method is implemented in the <a href="https://CRAN.R-project.org/package=brglm"><strong>brglm</strong></a> R package, which estimates binomial-response GLMs using iterative ML fits on binomial pseudo-data <span class="citation">(see, Kosmidis 2007, Chapter 5, for details)</span>. The reduced-bias estimates for the probit regression on the endometrial data can be computed as follows.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">library</span>(<span class="st">&quot;brglm&quot;</span>)</span></code></pre></div>
 <pre><code>## Loading required package: profileModel</code></pre>
 <pre><code>## &#39;brglm&#39; will gradually be superseded by &#39;brglm2&#39; (https://cran.r-project.org/package=brglm2), which provides utilities for mean and median bias reduction for all GLMs and methods for the detection of infinite estimates in binomial-response models.</code></pre>
@@ -475,9 +473,9 @@ b(\theta^{(k)})\]</span> where <span class="math inline">\(\theta^{(k)}\)</span>
 <p>The quasi Fisher scoring iteration that has been described here is at the core of the <a href="https://github.com/ikosmidis/brglm2"><strong>brglm2</strong></a> R package, which provides various bias reduction methods for GLMs.</p>
 <hr />
 </div>
-<div id="references" class="section level1 unnumbered">
-<h1>References</h1>
-<div id="refs" class="references">
+<div id="references" class="section level1">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references hanging-indent">
 <div id="ref-agresti:15">
 <p>Agresti, A. 2015. <em>Foundations of Linear and Generalized Linear Models</em>. Wiley Series in Probability and Statistics. Wiley.</p>
 </div>

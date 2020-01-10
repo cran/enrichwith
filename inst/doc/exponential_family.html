@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
@@ -13,27 +12,26 @@
 
 <meta name="author" content="Ioannis Kosmidis" />
 
-<meta name="date" content="2019-10-14" />
+<meta name="date" content="2020-01-09" />
 
-<title>Enriching family objects: exponential family of distirbutions</title>
+<title>Enriching family objects: exponential family of distributions</title>
 
 
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -53,7 +51,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -304,9 +302,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 
 
-<h1 class="title toc-ignore">Enriching <code>family</code> objects: exponential family of distirbutions</h1>
+<h1 class="title toc-ignore">Enriching <code>family</code> objects: exponential family of distributions</h1>
 <h4 class="author"><a href="http://www.ikosmidis.com">Ioannis Kosmidis</a></h4>
-<h4 class="date">2019-10-14</h4>
+<h4 class="date">2020-01-09</h4>
 
 
 
@@ -346,27 +344,27 @@ f_{Y}(y) = \exp\left\{\frac{y \theta - b(\theta) - c_1(y)}{\phi/m} - \frac{1}{2}
 </div>
 <div id="components-in-family-objects" class="section level1">
 <h1>Components in <code>family</code> objects</h1>
-<p><code>family</code> objects provide functions for the variance function (<code>variance</code>), a speficiation of deviance residuals (<code>dev.resids</code>) and the Akaike information criterion (<code>aic</code>). For example</p>
+<p><code>family</code> objects provide functions for the variance function (<code>variance</code>), a specification of deviance residuals (<code>dev.resids</code>) and the Akaike information criterion (<code>aic</code>). For example</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">inverse.gaussian</span>()<span class="op">$</span>dev.resids</span></code></pre></div>
 <pre><code>## function (y, mu, wt) 
 ## wt * ((y - mu)^2)/(y * mu^2)
-## &lt;bytecode: 0x7f857b838ef0&gt;
-## &lt;environment: 0x7f857b83abe0&gt;</code></pre>
+## &lt;bytecode: 0x7fbe690297d0&gt;
+## &lt;environment: 0x7fbe6902f4c0&gt;</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">inverse.gaussian</span>()<span class="op">$</span>variance</span></code></pre></div>
 <pre><code>## function (mu) 
 ## mu^3
-## &lt;bytecode: 0x7f857b8390b0&gt;
-## &lt;environment: 0x7f857b8967c0&gt;</code></pre>
+## &lt;bytecode: 0x7fbe69029990&gt;
+## &lt;environment: 0x7fbe5f0335b0&gt;</code></pre>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">inverse.gaussian</span>()<span class="op">$</span>aic</span></code></pre></div>
 <pre><code>## function (y, n, mu, wt, dev) 
 ## sum(wt) * (log(dev/sum(wt) * 2 * pi) + 1) + 3 * sum(log(y) * 
 ##     wt) + 2
-## &lt;bytecode: 0x7f857b838828&gt;
-## &lt;environment: 0x7f857b8f7b70&gt;</code></pre>
+## &lt;bytecode: 0x7fbe69029108&gt;
+## &lt;environment: 0x7fbe5f08ea50&gt;</code></pre>
 </div>
 <div id="enrichment-options-for-family-objects" class="section level1">
 <h1>Enrichment options for <code>family</code> objects</h1>
-<p>The <strong>enrichwith</strong> R package provides methods for the enrichment of <code>family</code> objects with a function that links the natural parameter <span class="math inline">\(\theta\)</span> with <span class="math inline">\(\mu\)</span>, the function <span class="math inline">\(b(\theta)\)</span>, the first two derivatives of <span class="math inline">\(V(\mu)\)</span>, <span class="math inline">\(a(\zeta)\)</span> and its first four derivatives, and <span class="math inline">\(c_1(y)\)</span> and <span class="math inline">\(c_2(y)\)</span>. To illustrate, let’s write a function that reconstructs the densitities and probability mass functions from the components that result from enrichment</p>
+<p>The <strong>enrichwith</strong> R package provides methods for the enrichment of <code>family</code> objects with a function that links the natural parameter <span class="math inline">\(\theta\)</span> with <span class="math inline">\(\mu\)</span>, the function <span class="math inline">\(b(\theta)\)</span>, the first two derivatives of <span class="math inline">\(V(\mu)\)</span>, <span class="math inline">\(a(\zeta)\)</span> and its first four derivatives, and <span class="math inline">\(c_1(y)\)</span> and <span class="math inline">\(c_2(y)\)</span>. To illustrate, let’s write a function that reconstructs the densities and probability mass functions from the components that result from enrichment</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">library</span>(<span class="st">&quot;enrichwith&quot;</span>)</span>
 <span id="cb7-2"><a href="#cb7-2"></a>dens &lt;-<span class="st"> </span><span class="cf">function</span>(y, <span class="dt">m =</span> <span class="dv">1</span>, mu, phi, family) {</span>
 <span id="cb7-3"><a href="#cb7-3"></a>    object &lt;-<span class="st"> </span><span class="kw">enrich</span>(family)</span>

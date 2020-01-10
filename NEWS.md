@@ -1,3 +1,12 @@
+# enrichwith 0.3.1
+
+## Bug fixes
+* Added conditional use of `SuppDists`
+
+## Other improvements, updates and additions
+* Fixed typos and spelling mistakes in documentation
+* Added new tests for d/r/p/qmodel
+
 # enrichwith 0.3
 
 ## New functionality
