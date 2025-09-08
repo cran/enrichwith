@@ -2,15 +2,15 @@
 % Please edit documentation in R/enrich-package.R
 \docType{package}
 \name{enrichwith}
-\alias{enrichwith}
 \alias{enrichwith-package}
+\alias{enrichwith}
 \title{Methods to enrich list-like R objects with extra components}
 \description{
 The enrichwith package provides the \code{\link{enrich}} method to
 enrich list-like R objects with new, relevant components. The
 resulting objects preserve their class, so all methods associated
 with them still apply. The package can also be used to produce
-customisable source code templates for the structured
+customizable source code templates for the structured
 implementation of methods to compute new components
 }
 \details{
@@ -21,12 +21,12 @@ steps:
 \enumerate{
 
 \item Use \code{\link{create_enrichwith_skeleton}} to produce a
-customisable enrichwith template.
+customizable enrichwith template.
 
 \item Edit the \code{compute_*} functions by adding the specific
 code that calculates the components.
 
-\item Finalise the documentation and/or include more examples.
+\item Finalize the documentation and/or include more examples.
 }
 
 The first step results in a template that includes all necessary
@@ -49,4 +49,8 @@ particularly if that extends core R objects.
 }
 \seealso{
 \code{\link{enrich.glm}} and \code{\link{enriched_glm}}, \code{\link{enrich.family}}, \code{\link{enrich.link-glm}}, \code{\link{enrich.betareg}}
+}
+\author{
+\strong{Maintainer}: Ioannis Kosmidis \email{ioannis.kosmidis@warwick.ac.uk}
+
 }

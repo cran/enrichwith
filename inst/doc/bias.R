@@ -1,27 +1,27 @@
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 # Get the data from the online supplmementary material of Agresti (2015)
 data("endometrial", package = "enrichwith")
 modML <- glm(HG ~ NV + PI + EH, family = binomial("probit"), data = endometrial)
 theta_mle <- coef(modML)
 summary(modML)
 
-## ---- echo = TRUE, eval = TRUE, messages = FALSE-------------------------
+## ----echo = TRUE, eval = TRUE, messages = FALSE-------------------------------
 library("brglm")
 modBR <- brglm(HG ~ NV + PI + EH, family = binomial("probit"), data = endometrial)
 theta_brglm <- coef(modBR)
 summary(modBR)
 
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 library("enrichwith")
 enriched_modML <- enrich(modML, with = "auxiliary functions")
 
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 # Extract the ingredients for the quasi Fisher scoring iteration from the enriched glm object
 gradient <- enriched_modML$auxiliary_functions$score # gradient of the log-likelihood
 information <- enriched_modML$auxiliary_functions$information # information matrix
 bias <- enriched_modML$auxiliary_functions$bias # first-order bias
 
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 # The quasi Fisher scoring iteration using c(theta) = identity
 for (k in seq.int(maxit)) {
     s_vector <- gradient(theta_current)
@@ -36,10 +36,10 @@ for (k in seq.int(maxit)) {
 }
 (theta_e <- drop(theta_current))
 
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 all.equal(theta_e, theta_brglm, check.attributes = FALSE, tolerance = epsilon)
 
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 # The quasi Fisher scoring iteration using c(theta) = solve(i(theta)) %*% j(theta)
 for (k in seq.int(maxit)) {
     s_vector <- gradient(theta_current)
@@ -55,10 +55,10 @@ for (k in seq.int(maxit)) {
 }
 (theta_o <- drop(theta_current))
 
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 round(data.frame(theta_mle, theta_e, theta_o), 3)
 
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 se_theta_mle <- sqrt(diag(solve(information(theta_mle, type = "expected"))))
 se_theta_e <- sqrt(diag(solve(information(theta_e, type = "expected"))))
 se_theta_o <- sqrt(diag(solve(information(theta_o, type = "expected"))))

@@ -1,9 +1,9 @@
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 inverse.gaussian()$dev.resids
 inverse.gaussian()$variance
 inverse.gaussian()$aic
 
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 library("enrichwith")
 dens <- function(y, m = 1, mu, phi, family) {
     object <- enrich(family)
@@ -14,7 +14,7 @@ dens <- function(y, m = 1, mu, phi, family) {
     })
 }
 
-## ---- echo = TRUE, eval = TRUE-------------------------------------------
+## ----echo = TRUE, eval = TRUE-------------------------------------------------
 ## Normal
 all.equal(dens(y = 0.2, m = 3, mu = 1, phi = 3.22, gaussian()),
           dnorm(x = 0.2, mean = 1, sd = sqrt(3.22/3)))
