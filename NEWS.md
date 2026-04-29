@@ -1,3 +1,34 @@
+# enrichwith 0.5.0
+
+## New functionality
+
+* Added `Pmat()` and `Qmat()` to the auxiliary functions for enriched
+ `glm` objects. These return the `P_t` and `Q_t` matrices used in mean
+ and median bias-reduction calculations, and can be evaluated at
+ user-supplied regression and dispersion parameter values.
+
+## Bug fixes
+
+* Fixed bugs with the handling aliasing.
+
+## Other improvements, updates, and additions
+
+* Added new tests for existing and new functionality.
+
+* Various documentation updates.
+
+* Updated package metadata, including adding `brglm2` to `Suggests`.
+
+# enrichwith 0.4.0
+
+## Other improvements, updates, and additions
+
+* Deprecated `enriched_glm()` as it might lead to scoping
+  issues. Users are recommended to use the call `enrich(glm(...))` or 
+  `glm(...) |> enrich()`.
+  
+* Fixed documentation links, and other minor documentation improvements
+
 # enrichwith 0.3.2
 
 ## Bug fixes
@@ -6,14 +37,10 @@
    which would cause failures with `get_bias_function()` and other
    methods.
 
-## Other improvements, updated, and additions
+## Other improvements, updates, and additions
 
 * Documentation fixes.
 * Added **MASS** in Suggests to allow for using **ggplot2** in vignettes.
-
-* Deprecated `enriched_glm()` as it might lead to scoping
-  issues. Users are recommended to use the call `enrich(glm(...))` or 
-  `glm(...) |> enrich()`.
 
 # enrichwith 0.3.1
 
