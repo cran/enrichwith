@@ -1,3 +1,43 @@
+# enrichwith 0.6.0
+
+## New functionality
+
+* The `score()`, `information()`, `dmodel()`, and `pmodel()` auxiliary
+  functions for `glm` objects can now be evaluated at a supplied response
+  under the fitted model design.
+
+* The `score()` and `information()` auxiliary functions for `betareg`
+  objects can now be evaluated at a supplied response under the fitted
+  model design.
+
+* Added `dmodel()`, `pmodel()`, and `qmodel()` auxiliary functions for
+  `betareg` objects fitted with `dist = "beta"`. These evaluate beta
+  densities, distribution functions, and quantile functions under the
+  fitted model design.
+
+* Added `Pmat()` and `Qmat()` auxiliary functions for `betareg` objects
+  fitted with `dist = "beta"`. These return the `P_t` and `Q_t` matrices
+  used in bias calculations.
+
+## Bug fixes
+
+* Fixed the incorrect application of ordinary-beta auxiliary functions to
+  `betareg` objects fitted with `dist = "xbeta"` or `dist = "xbetax"`.
+  Such objects are now rejected with an informative error.
+
+## Other improvements, updates, and additions
+
+* Standardized the interfaces of the `dmodel()`, `pmodel()`, and `qmodel()`
+  auxiliary functions for `glm` objects around the fitted model design, in
+  line with `score()` and `information()`. Consequently, `dmodel()` and
+  `pmodel()` now accept a response rather than a data frame, and `qmodel()`
+  evaluates one probability per fitted observation. This replaces the
+  previous interface for evaluation at arbitrary data frames.
+
+* Added new tests for existing and new functionality.
+
+* Various documentation updates.
+
 # enrichwith 0.5.0
 
 ## New functionality
@@ -149,6 +189,3 @@
 # enrichwith 0.01
 
 * First release.
-
-
-

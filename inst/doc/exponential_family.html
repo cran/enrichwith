@@ -12,7 +12,7 @@
 
 <meta name="author" content="Ioannis Kosmidis" />
 
-<meta name="date" content="2026-04-29" />
+<meta name="date" content="2026-09-29" />
 
 <title>Enriching family objects: exponential family of distributions</title>
 
@@ -343,7 +343,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 exponential family of distributions</h1>
 <h4 class="author"><a href="https://www.ikosmidis.com">Ioannis
 Kosmidis</a></h4>
-<h4 class="date">2026-04-29</h4>
+<h4 class="date">2026-09-29</h4>
 
 
 
@@ -436,19 +436,19 @@ function (<code>variance</code>), a specification of deviance residuals
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">inverse.gaussian</span>()<span class="sc">$</span>dev.resids</span></code></pre></div>
 <pre><code>## function (y, mu, wt) 
 ## wt * ((y - mu)^2)/(y * mu^2)
-## &lt;bytecode: 0xb3d0ce4d8&gt;
-## &lt;environment: 0xb3d0d01c8&gt;</code></pre>
+## &lt;bytecode: 0xc0a675150&gt;
+## &lt;environment: 0xc0a676e40&gt;</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">inverse.gaussian</span>()<span class="sc">$</span>variance</span></code></pre></div>
 <pre><code>## function (mu) 
 ## mu^3
-## &lt;bytecode: 0xb3d0ce698&gt;
-## &lt;environment: 0xb3d10c200&gt;</code></pre>
+## &lt;bytecode: 0xc0a675310&gt;
+## &lt;environment: 0xc0a6cae78&gt;</code></pre>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">inverse.gaussian</span>()<span class="sc">$</span>aic</span></code></pre></div>
 <pre><code>## function (y, n, mu, wt, dev) 
 ## sum(wt) * (1 + log(dev/sum(wt) * 2 * pi)) + 3 * sum(log(y) * 
 ##     wt) + 2
-## &lt;bytecode: 0xb3d0d1d20&gt;
-## &lt;environment: 0xb3d146b30&gt;</code></pre>
+## &lt;bytecode: 0xc0a674a88&gt;
+## &lt;environment: 0xc0a71d7a8&gt;</code></pre>
 </div>
 <div id="enrichment-options-for-family-objects" class="section level1">
 <h1>Enrichment options for <code>family</code> objects</h1>

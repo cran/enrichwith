@@ -26,12 +26,20 @@ likelihood estimator, and the first term in the expansion of the
 bias of the maximum likelihood estimator.
 }
 \details{
+Enrichment is currently implemented only for models fitted with
+\code{dist = "beta"}.
+
 The \code{auxiliary_functions} component consists of any or all of the following functions:
 \itemize{
-\item \code{score}: the log-likelihood derivatives as a function of the model parameters; see \code{get_score_function.betareg}
-\item \code{information}: the expected information as a function of the model parameters; see \code{\link{get_information_function.betareg}}
+\item \code{score}: the log-likelihood derivatives as a function of the model parameters and, optionally, a supplied response; see \code{get_score_function.betareg}
+\item \code{information}: the expected or observed information as a function of the model parameters and, optionally, a supplied response; see \code{\link{get_information_function.betareg}}
 \item \code{bias}: the first-order term in the expansion of the bias of the maximum likelihood estimator as a function of the model parameters; see \code{\link{get_bias_function.betareg}}
 \item \code{simulate}: a \code{\link{simulate}} function for \code{\link[betareg]{betareg}} objects that can simulate variates from the model at user-supplied parameter values for the regression parameters (default is the maximum likelihood estimates); see \code{\link{get_simulate_function.betareg}}
+\item \code{dmodel}: computes beta densities under the fitted design at user-supplied responses and parameter values; see \code{\link{get_dmodel_function.betareg}}
+\item \code{pmodel}: computes beta distribution functions under the fitted design at user-supplied responses and parameter values; see \code{\link{get_pmodel_function.betareg}}
+\item \code{qmodel}: computes beta quantile functions under the fitted design at user-supplied probabilities and parameter values; see \code{\link{get_qmodel_function.betareg}}
+\item \code{Pmat}: the matrices \eqn{P_t} as a function of the model parameters
+\item \code{Qmat}: the matrices \eqn{Q_t} as a function of the model parameters
 }
 }
 \examples{

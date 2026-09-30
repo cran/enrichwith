@@ -12,12 +12,20 @@
 #'     \code{compute_*} functions
 #'
 #' @details
+#' Enrichment is currently implemented only for models fitted with
+#' \code{dist = "beta"}.
+#'
 #' The \code{auxiliary_functions} component consists of any or all of the following functions:
 #' \itemize{
-#' \item \code{score}: the log-likelihood derivatives as a function of the model parameters; see \code{get_score_function.betareg}
-#' \item \code{information}: the expected information as a function of the model parameters; see \code{\link{get_information_function.betareg}}
+#' \item \code{score}: the log-likelihood derivatives as a function of the model parameters and, optionally, a supplied response; see \code{get_score_function.betareg}
+#' \item \code{information}: the expected or observed information as a function of the model parameters and, optionally, a supplied response; see \code{\link{get_information_function.betareg}}
 #' \item \code{bias}: the first-order term in the expansion of the bias of the maximum likelihood estimator as a function of the model parameters; see \code{\link{get_bias_function.betareg}}
 #' \item \code{simulate}: a \code{\link{simulate}} function for \code{\link[betareg]{betareg}} objects that can simulate variates from the model at user-supplied parameter values for the regression parameters (default is the maximum likelihood estimates); see \code{\link{get_simulate_function.betareg}}
+#' \item \code{dmodel}: computes beta densities under the fitted design at user-supplied responses and parameter values; see \code{\link{get_dmodel_function.betareg}}
+#' \item \code{pmodel}: computes beta distribution functions under the fitted design at user-supplied responses and parameter values; see \code{\link{get_pmodel_function.betareg}}
+#' \item \code{qmodel}: computes beta quantile functions under the fitted design at user-supplied probabilities and parameter values; see \code{\link{get_qmodel_function.betareg}}
+#' \item \code{Pmat}: the matrices \eqn{P_t} as a function of the model parameters
+#' \item \code{Qmat}: the matrices \eqn{Q_t} as a function of the model parameters
 #' }
 #'
 #' @return The object \code{object} of class \code{\link[betareg]{betareg}}
@@ -123,8 +131,11 @@
     out
 }
 
-#' @method compute_auxiliary_functions betareg
+#' @export
 `compute_auxiliary_functions.betareg` <- function(object, ...) {
+    if (!identical(object$dist, "beta")) {
+        stop("enrichment is currently only implemented for betareg objects with `dist = \"beta\"`")
+    }
     if (is.null(object$model)) {
         object <- update(object, model = TRUE)
     }
@@ -154,9 +165,38 @@
     phi_linkinv <- linkprec$linkinv
     phi_mu.eta <- linkprec$mu.eta
     phi_dmu.deta <- linkprec$d2mu.deta
-    ystar <- qlogis(y)
-    u <- log(1 - y)
-    score <- function(coefficients, contributions = FALSE) {
+    response_data <- function(response) {
+        if (missing(response)) {
+            response <- y
+        }
+        if (!is.numeric(response) || is.data.frame(response) ||
+            !is.null(dim(response)) || length(response) != length(y)) {
+            stop("'response' must be a numeric vector with the same length as the fitted response")
+        }
+        if (anyNA(response) || any(!is.finite(response)) ||
+            any(response <= 0 | response >= 1)) {
+            stop("all values of 'response' must be finite and in (0, 1)")
+        }
+        list(response = response, ystar = qlogis(response),
+             u = log1p(-response))
+    }
+    distribution_parameters <- function(coefficients) {
+        if (missing(coefficients)) {
+            coefficients <- coef(object, model = "full")
+        }
+        beta <- coefficients[seq.int(length.out = k)]
+        gamma <- coefficients[seq.int(length.out = m) + k]
+        eta <- as.vector(x %*% beta + offset[[1L]])
+        phi_eta <- as.vector(z %*% gamma + offset[[2L]])
+        mu <- linkinv(eta)
+        phi <- phi_linkinv(phi_eta)
+        list(shape1 = mu * phi, shape2 = (1 - mu) * phi,
+             coefficients = coefficients)
+    }
+    score <- function(coefficients, contributions = FALSE, response) {
+        response_values <- response_data(response)
+        ystar <- response_values$ystar
+        u <- response_values$u
         if (missing(coefficients)) {
             coefficients <- coef(object, model = "full")
         }
@@ -180,7 +220,10 @@
     }
 
     information <- function(coefficients, QR = TRUE, CHOL = FALSE,
-                            type = c("expected", "observed")) {
+                            type = c("expected", "observed"), response) {
+        response_values <- response_data(response)
+        ystar <- response_values$ystar
+        u <- response_values$u
         if (missing(coefficients)) {
             coefficients <- coef(object, model = "full")
         }
@@ -235,7 +278,39 @@
 
     }
 
-    bias <- function(coefficients) {
+    dmodel <- function(response, coefficients, log = FALSE) {
+        response <- response_data(response)$response
+        parameters <- distribution_parameters(coefficients)
+        out <- dbeta(response, shape1 = parameters$shape1,
+                     shape2 = parameters$shape2, log = log)
+        attr(out, "coefficients") <- parameters$coefficients
+        out
+    }
+
+    pmodel <- function(response, coefficients, lower.tail = TRUE,
+                       log.p = FALSE) {
+        response <- response_data(response)$response
+        parameters <- distribution_parameters(coefficients)
+        out <- pbeta(response, shape1 = parameters$shape1,
+                     shape2 = parameters$shape2, lower.tail = lower.tail,
+                     log.p = log.p)
+        attr(out, "coefficients") <- parameters$coefficients
+        out
+    }
+
+    qmodel <- function(p, coefficients, lower.tail = TRUE, log.p = FALSE) {
+        if (length(p) != n) {
+            stop("'p' must have one element for each fitted observation")
+        }
+        parameters <- distribution_parameters(coefficients)
+        out <- qbeta(p, shape1 = parameters$shape1,
+                     shape2 = parameters$shape2, lower.tail = lower.tail,
+                     log.p = log.p)
+        attr(out, "coefficients") <- parameters$coefficients
+        out
+    }
+
+    PQmatrices <- function(coefficients) {
         if (missing(coefficients)) {
             coefficients <- coef(object, model = "full")
         }
@@ -245,10 +320,8 @@
         phi_eta <- as.vector(z %*% gamma + offset[[2L]])
         mu <- linkinv(eta)
         phi <- phi_linkinv(phi_eta)
-        mustar <- digamma(mu * phi) - digamma((1 - mu) * phi)
         psi1 <- trigamma(mu * phi)
         psi2 <- trigamma((1 - mu) * phi)
-        InfoInv <- try(solve(information(coefficients)), silent = TRUE)
         D1 <- mu.eta(eta)
         D2 <- phi_mu.eta(phi_eta)
         D1dash <- dmu.deta(eta)
@@ -259,53 +332,97 @@
         kappa3 <- dPsi1 - dPsi2
         psi3 <- psigamma(phi, 1)
         dPsi3 <- psigamma(phi, 2)
-        PQsum <- function(t) {
+        coefnames <- names(coef(object, model = "full"))
+
+        PQ <- lapply(seq_len(k + m), function(t) {
             if (t <= k) {
                 Xt <- x[, t]
-                bb <- if (k > 0L)
-                  crossprod(x, weights * phi^2 * D1 * (phi *
-                    D1^2 * kappa3 + D1dash * kappa2) * Xt * x)
+                Pbb <- if (k > 0L)
+                  crossprod(x, weights * phi^3 * D1^3 * kappa3 *
+                    Xt * x)
                 else crossprod(x)
-                bg <- if ((k > 0L) & (m > 0L))
-                  crossprod(x, weights * phi * D1^2 * D2 * (mu *
-                    phi * kappa3 + phi * dPsi2 + kappa2) * Xt *
-                    z)
+                Qbb <- if (k > 0L)
+                  crossprod(x, weights * phi^2 * D1 * D1dash *
+                    kappa2 * Xt * x)
+                else crossprod(x)
+                Pbg <- if ((k > 0L) & (m > 0L))
+                  crossprod(x, weights * phi^2 * D1^2 * D2 *
+                    (mu * kappa3 + dPsi2) * Xt * z)
                 else crossprod(x, z)
-                gg <- if (m > 0L)
+                Qbg <- if ((k > 0L) & (m > 0L))
+                  crossprod(x, weights * phi * D1^2 * D2 *
+                    kappa2 * Xt * z)
+                else crossprod(x, z)
+                Pgg <- if (m > 0L)
                   crossprod(z, weights * phi * D1 * D2^2 * (mu^2 *
-                    kappa3 - dPsi2 + 2 * mu * dPsi2) * Xt * z) +
-                    crossprod(z, weights * phi * D1 * D2dash *
-                      (mu * kappa2 - psi2) * Xt * z)
+                    kappa3 + (2 * mu - 1) * dPsi2) * Xt * z)
                 else crossprod(z)
-            }
-            else {
+                Qgg <- if (m > 0L)
+                  crossprod(z, weights * phi * D1 * D2dash *
+                    (mu * kappa2 - psi2) * Xt * z)
+                else crossprod(z)
+            } else {
                 Zt <- z[, t - k]
-                bb <- if (k > 0L)
-                  crossprod(x, weights * phi * D2 * (phi * D1^2 *
-                    mu * kappa3 + phi * D1^2 * dPsi2 + D1dash *
-                    mu * kappa2 - D1dash * psi2) * Zt * x)
+                Pbb <- if (k > 0L)
+                  crossprod(x, weights * phi^2 * D2 * D1^2 *
+                    (mu * kappa3 + dPsi2) * Zt * x)
                 else crossprod(x)
-                bg <- if ((k > 0L) & (m > 0L))
-                  crossprod(x, weights * D1 * D2^2 * (phi * mu^2 *
-                    kappa3 + phi * (2 * mu - 1) * dPsi2 + mu *
-                    kappa2 - psi2) * Zt * z)
+                Qbb <- if (k > 0L)
+                  crossprod(x, weights * phi * D2 * D1dash *
+                    (mu * kappa2 - psi2) * Zt * x)
+                else crossprod(x)
+                Pbg <- if ((k > 0L) & (m > 0L))
+                  crossprod(x, weights * phi * D1 * D2^2 *
+                    (mu^2 * kappa3 + (2 * mu - 1) * dPsi2) *
+                    Zt * z)
                 else crossprod(x, z)
-                gg <- if (m > 0L)
+                Qbg <- if ((k > 0L) & (m > 0L))
+                  crossprod(x, weights * D1 * D2^2 *
+                    (mu * kappa2 - psi2) * Zt * z)
+                else crossprod(x, z)
+                Pgg <- if (m > 0L)
                   crossprod(z, weights * D2^3 * (mu^3 * kappa3 +
                     (3 * mu^2 - 3 * mu + 1) * dPsi2 - dPsi3) *
-                    Zt * z) + crossprod(z, weights * D2dash *
-                    D2 * (mu^2 * kappa2 + (1 - 2 * mu) * psi2 -
-                    psi3) * Zt * z)
+                    Zt * z)
+                else crossprod(z)
+                Qgg <- if (m > 0L)
+                  crossprod(z, weights * D2dash * D2 * (mu^2 *
+                    kappa2 + (1 - 2 * mu) * psi2 - psi3) * Zt * z)
                 else crossprod(z)
             }
-            pq <- rbind(cbind(bb, bg), cbind(t(bg), gg))
-            sum(diag(InfoInv %*% pq))/2
+            P <- rbind(cbind(Pbb, Pbg), cbind(t(Pbg), Pgg))
+            Q <- rbind(cbind(Qbb, Qbg), cbind(t(Qbg), Qgg))
+            dimnames(P) <- dimnames(Q) <- list(coefnames, coefnames)
+            list(P = P, Q = Q)
+        })
+        P <- lapply(PQ, `[[`, "P")
+        Q <- lapply(PQ, `[[`, "Q")
+        names(P) <- names(Q) <- coefnames
+        attr(P, "coefficients") <- attr(Q, "coefficients") <- coefficients
+        list(P = P, Q = Q)
+    }
+
+    Pmat <- function(coefficients) {
+        PQmatrices(coefficients)$P
+    }
+
+    Qmat <- function(coefficients) {
+        PQmatrices(coefficients)$Q
+    }
+
+    bias <- function(coefficients) {
+        if (missing(coefficients)) {
+            coefficients <- coef(object, model = "full")
         }
+        InfoInv <- try(solve(information(coefficients)), silent = TRUE)
         if (inherits(InfoInv, "try-error")) {
             bias <- rep.int(NA_real_, k + m)
-        }
-        else {
-            bias <- drop(-InfoInv %*% sapply(1:(k + m), PQsum))
+        } else {
+            PQ <- PQmatrices(coefficients)
+            adjustment <- vapply(seq_len(k + m), function(t) {
+                sum(diag(InfoInv %*% (PQ$P[[t]] + PQ$Q[[t]]))) / 2
+            }, numeric(1))
+            bias <- drop(-InfoInv %*% adjustment)
         }
         bias
     }
@@ -313,8 +430,7 @@
     simulate <- function(coefficients, nsim = 1, seed = NULL) {
         if (missing(coefficients)) {
             coefficients <-  coef(object, model = "full")
-        }
-        else {
+        } else {
             if (!isTRUE(identical(length(coefficients), length(coef(object, model = "full"))))) {
                 stop("`coefficients` does not have the right length")
             }
@@ -342,7 +458,12 @@
     return(list(score = score,
                 information = information,
                 bias = bias,
-                simulate = simulate))
+                simulate = simulate,
+                dmodel = dmodel,
+                pmodel = pmodel,
+                qmodel = qmodel,
+                Pmat = Pmat,
+                Qmat = Qmat))
 }
 
 
@@ -350,7 +471,7 @@
     UseMethod('compute_auxiliary_functions')
 }
 
-#' @method compute_score_mle betareg
+#' @export
 `compute_score_mle.betareg` <- function(object, ...) {
     get_score_function(object)()
 }
@@ -360,7 +481,7 @@
     UseMethod('compute_score_mle')
 }
 
-#' @method compute_expected_information betareg
+#' @export
 `compute_expected_information_mle.betareg` <- function(object, ...) {
     get_information_function(object)()
 }
@@ -370,7 +491,7 @@
     UseMethod('compute_expected_information_mle')
 }
 
-#' @method compute_bias_mle betareg
+#' @export
 `compute_bias_mle.betareg` <- function(object, ...) {
     get_bias_function(object)()
 }
@@ -395,8 +516,7 @@ get_auxiliary_functions.betareg <- function(object, ...) {
     if (is.null(object$auxiliary_functions)) {
         enriched_object <- enrich(object, with = "auxiliary functions")
         enriched_object$auxiliary_functions
-    }
-    else {
+    } else {
         object$auxiliary_functions
     }
 }
@@ -432,8 +552,7 @@ get_auxiliary_functions.betareg <- function(object, ...) {
 get_simulate_function.betareg <- function(object, ...) {
     if (is.null(object$auxiliary_functions)) {
         get_auxiliary_functions(object)$simulate
-    }
-    else {
+    } else {
         object$auxiliary_functions$simulate
     }
 }
@@ -453,14 +572,17 @@ get_simulate_function.betareg <- function(object, ...) {
 #' are computed. If missing then the maximum likelihood estimates are
 #' used}
 #'
+#' \item{response}{an optional numeric response vector with values in
+#' \code{(0, 1)}. It must have the same length as the response in the
+#' fitted model. If missing, the fitted response is used}
+#'
 #' }
 #'
 #' @export
 get_score_function.betareg <- function(object, ...) {
     if (is.null(object$auxiliary_functions)) {
         get_auxiliary_functions(object)$score
-    }
-    else {
+    } else {
         object$auxiliary_functions$score
     }
 }
@@ -486,15 +608,118 @@ get_score_function.betareg <- function(object, ...) {
 #'
 #' \item{CHOL}{If \code{TRUE}, then the Cholesky decomposition of the information matrix at the coefficients is returned}
 #'
+#' \item{response}{an optional numeric response vector with values in
+#' \code{(0, 1)}. It must have the same length as the response in the
+#' fitted model. If missing, the fitted response is used}
+#'
 #' }
 #'
 #' @export
 get_information_function.betareg <- function(object, ...) {
     if (is.null(object$auxiliary_functions)) {
         get_auxiliary_functions(object)$information
-    }
-    else {
+    } else {
         object$auxiliary_functions$information
+    }
+}
+
+#' Function to compute/extract a \code{dmodel} function
+#'
+#' @param object an object of class \code{betareg} or\code{enriched_betareg}
+#' @param ... currently not used
+#'
+#' @details
+#' The computed/extracted function has arguments
+#' \describe{
+#'
+#' \item{response}{an optional numeric response vector at which to
+#' compute densities. Values must be in \code{(0, 1)}, and the vector
+#' must have the same length as the fitted response. If missing, the
+#' fitted response is used}
+#'
+#' \item{coefficients}{the mean and precision regression coefficients
+#' at which the densities are computed. If missing, the maximum
+#' likelihood estimates are used}
+#'
+#' \item{log}{logical; if \code{TRUE}, logarithmic densities are
+#' returned}
+#'
+#' }
+#'
+#' @export
+get_dmodel_function.betareg <- function(object, ...) {
+    if (is.null(object$auxiliary_functions)) {
+        get_auxiliary_functions(object)$dmodel
+    } else {
+        object$auxiliary_functions$dmodel
+    }
+}
+
+#' Function to compute/extract a \code{pmodel} function
+#'
+#' @param object an object of class \code{betareg} or\code{enriched_betareg}
+#' @param ... currently not used
+#'
+#' @details
+#' The computed/extracted function has arguments
+#' \describe{
+#'
+#' \item{response}{an optional numeric response vector at which to
+#' compute the distribution function. Values must be in \code{(0, 1)},
+#' and the vector must have the same length as the fitted response. If
+#' missing, the fitted response is used}
+#'
+#' \item{coefficients}{the mean and precision regression coefficients
+#' at which the distribution function is computed. If missing, the
+#' maximum likelihood estimates are used}
+#'
+#' \item{lower.tail}{logical; if \code{TRUE} (default), probabilities
+#' are \eqn{P[X \le x]}, otherwise, \eqn{P[X > x]}}
+#'
+#' \item{log.p}{logical; if \code{TRUE}, logarithmic probabilities are
+#' returned}
+#'
+#' }
+#'
+#' @export
+get_pmodel_function.betareg <- function(object, ...) {
+    if (is.null(object$auxiliary_functions)) {
+        get_auxiliary_functions(object)$pmodel
+    } else {
+        object$auxiliary_functions$pmodel
+    }
+}
+
+#' Function to compute/extract a \code{qmodel} function
+#'
+#' @param object an object of class \code{betareg} or\code{enriched_betareg}
+#' @param ... currently not used
+#'
+#' @details
+#' The computed/extracted function has arguments
+#' \describe{
+#'
+#' \item{p}{a vector with one probability for each observation in the
+#' fitted model}
+#'
+#' \item{coefficients}{the mean and precision regression coefficients
+#' at which the quantiles are computed. If missing, the maximum
+#' likelihood estimates are used}
+#'
+#' \item{lower.tail}{logical; if \code{TRUE} (default), probabilities
+#' are \eqn{P[X \le x]}, otherwise, \eqn{P[X > x]}}
+#'
+#' \item{log.p}{logical; if \code{TRUE}, logarithmic probabilities are
+#' used}
+#'
+#' }
+#'
+#' @export
+get_qmodel_function.betareg <- function(object, ...) {
+    if (is.null(object$auxiliary_functions)) {
+        get_auxiliary_functions(object)$qmodel
+    } else {
+        object$auxiliary_functions$qmodel
     }
 }
 
@@ -519,12 +744,10 @@ get_information_function.betareg <- function(object, ...) {
 get_bias_function.betareg <- function(object, ...) {
     if (is.null(object$auxiliary_functions)) {
         get_auxiliary_functions(object)$bias
-    }
-    else {
+    } else {
         object$auxiliary_functions$bias
     }
 }
-
 
 
 ## ## Call that produced the original version of the enrichwith template for the current script:
@@ -537,4 +760,3 @@ get_bias_function.betareg <- function(object, ...) {
 ##     component = list("auxiliary_functions", "score_mle", "dispersion_mle",
 ##         "expected_information_mle",
 ##         "bias_mle"), path = "~/Downloads", attempt_rename = FALSE)
-

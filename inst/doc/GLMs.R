@@ -113,31 +113,16 @@ cML_dmodel()
 cML_dmodel(coefficients = c(-0.01, 0.02, -0.01, 0), dispersion = 0.1)
 
 ## ----echo = TRUE, eval = TRUE-------------------------------------------------
-new_data <- data.frame(conc = 5:10, time = 50:45, lot = factor(c(1, 1, 1, 2, 2, 2)))
-cML_dmodel(data = new_data, coefficients = c(-0.01, 0.02, -0.01, 0), dispersion = 0.1)
+new_response <- rev(clotting$time)
+cML_dmodel(response = new_response,
+           coefficients = c(-0.01, 0.02, -0.01, 0), dispersion = 0.1)
 
 ## ----echo = TRUE, eval = TRUE-------------------------------------------------
 cML_qmodel <- get_qmodel_function(clottingML)
 cML_pmodel <- get_pmodel_function(clottingML)
-probs <- cML_pmodel(data = new_data, coefficients = c(-0.01, 0.02, -0.01, 0), dispersion = 0.1)
-cML_qmodel(probs, data = new_data, coefficients = c(-0.01, 0.02, -0.01, 0), dispersion = 0.1)
-
-## ----echo = TRUE, eval = TRUE-------------------------------------------------
-new_data <- expand.grid(conc = c(15, 40),
-                        lot = factor(1:2),
-                        time = seq(0, 50, length = 500))
-new_data$density <- cML_dmodel(new_data)
-ggplot(data = new_data) + 
-     geom_line(aes(time, density)) + facet_grid(conc ~ lot) +
-     theme_bw() +
-     geom_vline(data = clotting[c(3, 6, 12, 15), ], aes(xintercept = time), lty = 2)
-
-## ----echo = TRUE, eval = TRUE-------------------------------------------------
-enriched_clottingML <- enriched_glm(time ~ log(conc) * lot, family = Gamma, data = clotting)
-names(enriched_clottingML$auxiliary_functions)
-enriched_clottingML$score_mle
-enriched_clottingML$expected_information_mle
-enriched_clottingML$observed_information_mle
-enriched_clottingML$bias_mle
-enriched_clottingML$dispersion_mle
+probs <- cML_pmodel(response = new_response,
+                    coefficients = c(-0.01, 0.02, -0.01, 0),
+                    dispersion = 0.1)
+cML_qmodel(probs, coefficients = c(-0.01, 0.02, -0.01, 0),
+           dispersion = 0.1)
 
